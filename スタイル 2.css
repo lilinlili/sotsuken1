@@ -43,8 +43,8 @@ body {
   top: 110px; /* 上部からの位置 */
   text-align: center; /* 中央揃え */
   z-index: 10; 
-  /*margin-top: 10px; /* 上部の余白を調整 */
-  /*margin-bottom: 10px; /* 下部の余白を調整 */
+  margin-top: 10px; /* 上部の余白を調整 */
+  margin-bottom: 10px; /* 下部の余白を調整 */
 }
 
 
