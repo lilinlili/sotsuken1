@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header with Dropdown Menu & Slider</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e1f5fe;  /* ページ全体の背景色を寒色系の薄い青に変更 */
+            animation: backgroundAnimation 5s infinite alternate; /* 背景の寒色系アニメーション */
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background-color: #e1f5fe;  /* 薄い青 */
+            }
+            50% {
+                background-color: #80deea; /* 水色 */
+            }
+            100% {
+                background-color: #4fc3f7; /* 青 */
+            }
+        }
+
+        /* 動くパララックス背景 */
+        .parallax {
+            position: relative;
+            height: 70vh;
+            background-image: url('ブロスタ2.jpg'); 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: -1;
+            animation: moveBackground 10s linear infinite;
+        }
+
+        /* パララックス背景の動き */
+        @keyframes moveBackground {
+            0% {
+                background-position: center;
+            }
+            50% {
+                background-position: left center;
+            }
+            100% {
+                background-position: center;
+            }
+        }
+
+        /* ヘッダーのスタイル */
+        header {
+            background-color: rgba(0, 0, 0, 0.8);  /* ヘッダーの背景色を黒に変更 */
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            color: #80deea; /* 水色 */
+            text-decoration: none;
+            padding: 5px 10px;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: white;
+        }
+
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 0;
+            width: 150px;
+        }
+
+        nav ul li:hover > ul {
+            display: block;
+        }
+
+        nav ul li ul li {
+            width: 100%;
+        }
+
+        nav ul li ul li a {
+            color: #80deea;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+
+        nav ul li ul li a:hover {
+            color: white;
+        }
+
+        /* スライダー部分 */
+        .container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            overflow: hidden;
+            margin: 100px auto 20px;
+        }
+
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slider {
+            width: 30%;
+            height: 200px;
+            background-color: #80deea;  /* スライダーの背景色を水色に変更 */
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex: 0 0 auto;
+            margin-right: 20px;
+            opacity: 0.8;
+            background-size: cover; /* 背景画像のサイズをスライダーに合わせる */
+            background-position: center; /* 画像を中央に配置 */
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .arrow-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: none;
+            padding: 15px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .left-arrow {
+            left: 10px;
+        }
+
+        .right-arrow {
+            right: 10px;
+        }
+
+        /* コンテンツ部分の背景色を寒色系の薄い青に変更 */
+        .content {
+            padding: 20px;
+            margin-top: 20px;
+            height: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e1f5fe;  /* 背景色を薄い青に変更 */
+        }
+
+        /* 2つ目のパララックス背景 */
+        .parallax2 {
+            position: relative;
+            background-image: url('ブロスタ.jpg');
+            height: 40vh;
+            background-attachment: fixed;
+            background-position: top;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.6);  /* ヘッダーの背景色を寒色系に変更 */
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        footer a {
+            color: #80deea; /* 水色 */
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 最初のパララックス背景セクション -->
+    <div class="parallax"></div>
+
+    <!-- ヘッダー -->
+    <header>
+        <div class="logo">
+            <a href="https://www.ubdc.ac.jp/" target="_blank">
+                <img src="UBDC.png" alt="Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li>
+                    <a href="#">Mini Games</a>
+                    <ul>
+                        <li><a href="#">Game 1</a></li>
+                        <li><a href="#">Game 2</a></li>
+                        <li><a href="#">Game 3</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- コンテンツ部分 -->
+    <div class="content">
+        <h1>ビジ電ミニゲーム？</h1>
+        <p>ミニゲームを集めたサイト</p>
+    </div>
+
+    <!-- 2つ目のパララックス背景 -->
+    <div class="parallax2">
+    <!-- スライダー部分 -->
+<div class="container">
+    <div class="arrow-btn left-arrow" id="leftArrow">&#8592;</div>
+    <div class="arrow-btn right-arrow" id="rightArrow">&#8594;</div>
+
+    <div class="slider-container" id="sliderContainer">
+        <a href="index4.html" class="slider" style="background-image: url('テトリス.gif');"></a>
+        <a href="index5.html" class="slider" style="background-image: url('しんけい.png');"></a>
+        <a href="index6.html" class="slider" style="background-image: url('パックマン.gif');"></a>
+        <a href="index7.html" class="slider" style="background-image: url('tamatama.jpg');"></a>
+        <a href="index8.html" class="slider" style="background-image: url('tama.jpg');"></a>
+        <a href="https://example4.com" class="slider" style="background-image: url('新しい画像2.jpg');"></a>
+        <a href="https://example3.com" class="slider" style="background-image: url('新しい画像1.jpg');"></a>
+        <a href="https://example4.com" class="slider" style="background-image: url('新しい画像2.jpg');"></a>
+    </div>
+</div>
+
+    </div>
+
+    <div class="content">
+        <h1>Another Content Section</h1>
+        <p>More content here, scroll to see the parallax effect on different sections!</p>
+    </div>
+
+    <!-- フッター -->
+    <footer>
+        <p>&copy; 2024 Your Website. All Rights Reserved.</p>
+        <p>Designed by <a href="https://www.ubdc.ac.jp" target="_blank">UBDC</a></p>
+    </footer>
+
+    <script>
+        var sliderContainer = document.getElementById("sliderContainer");
+        var leftArrow = document.getElementById("leftArrow");
+        var rightArrow = document.getElementById("rightArrow");
+
+        var currentIndex = 0;
+        var totalSlides = document.querySelectorAll('.slider').length;
+
+        // 右矢印をクリックしたとき
+        rightArrow.addEventListener("click", function() {
+            currentIndex++;
+            if (currentIndex >= totalSlides) {
+                currentIndex = 0;
+            }
+            var offset = -currentIndex * 40;
+            sliderContainer.style.transition = "transform 0.5s ease";
+            sliderContainer.style.transform = "translateX(" + offset + "%)";
+        });
+
+        // 左矢印をクリックしたとき
+        leftArrow.addEventListener("click", function() {
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = totalSlides - 1;
+            }
+            var offset = -currentIndex * 40;
+            sliderContainer.style.transition = "transform 0.5s ease";
+            sliderContainer.style.transform = "translateX(" + offset + "%)";
+        });
+    </script>
+
+</body>
+</html>

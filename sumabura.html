@@ -1,0 +1,413 @@
+/<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スマブラ 二人用</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black; /* 背景色を黒に変更 */
+            color: white; /* 文字色を白に変更 */
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .stage {
+            width: 800px;
+            height: 400px;
+            background-color: #e0e0e0;
+            margin: 50px auto;
+            position: relative;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+        .floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30px;
+            background-color: #4CAF50;
+        }
+        .player {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            position: absolute;
+            bottom: 30px; /* 床の上に配置 */
+            transition: transform 0.1s ease; /* 変化を滑らかに */
+        }
+        .player2 {
+            background-color: #FF5722;
+        }
+        .sword {
+            width: 10px;
+            height: 40px;
+            background-color: #FFD700;
+            position: absolute;
+            top: 0; /* 剣の位置をプレイヤーの手の位置に合わせる */
+            left: -8px; /* プレイヤーの右手の位置 */
+            transform-origin: 0% 50%; /* 剣を持っている場所（プレイヤーの手）を回転軸にする */
+            transition: transform 0.2s ease; /* 攻撃アニメーションのスムーズさ */
+        }
+        .sword-left {
+            left: 48px; /* 左手で持っている場合の位置 */
+            transform-origin: 100% 50%; /* 左手に合わせる */
+        }
+        .scoreboard {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        /* 体力バーのスタイル */
+        .health-bar {
+            width: 50px;
+            height: 5px;
+            background-color: #FF0000;
+            position: absolute;
+            top: -10px; /* 頭の上に配置 */
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 3px;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background-color: #00FF00;
+            width: 100%; /* 初期状態で満タン */
+            border-radius: 3px;
+        }
+
+        .player.guard {
+    background-color: #FFC107;  /* ガード中は黄色に変更 */
+    border-radius: 5px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="stage">
+        <div id="player1" class="player" style="left: 100px; bottom: 30px;">
+            <div class="health-bar" id="health-bar1">
+                <div class="health-bar-fill" id="health-fill1"></div>
+            </div>
+            <div class="sword sword-left" id="sword1"></div> <!-- プレイヤー1の剣を左手用に変更 -->
+        </div>
+        <div id="player2" class="player player2" style="left: 650px; bottom: 30px;">
+            <div class="health-bar" id="health-bar2">
+                <div class="health-bar-fill" id="health-fill2"></div>
+            </div>
+            <div class="sword" id="sword2"></div>
+        </div>
+        <div class="floor"></div>
+    </div>
+
+    <div class="scoreboard">
+        <p>Player 1: <span id="score1">0</span> | HP: <span id="hp1">3</span></p>
+        <p>Player 2: <span id="score2">0</span> | HP: <span id="hp2">3</span></p>
+    </div>
+
+    <button class="btn" onclick="startGame()">ゲーム開始</button>
+
+    <script>
+        let score1 = 0;
+        let score2 = 0;
+        let hp1 = 3;  // プレイヤー1のHP
+        let hp2 = 3;  // プレイヤー2のHP
+
+        const player1 = document.getElementById('player1');
+        const player2 = document.getElementById('player2');
+        const sword1 = document.getElementById('sword1');
+        const sword2 = document.getElementById('sword2');
+        const score1Element = document.getElementById('score1');
+        const score2Element = document.getElementById('score2');
+        const hp1Element = document.getElementById('hp1');
+        const hp2Element = document.getElementById('hp2');
+        const healthFill1 = document.getElementById('health-fill1');
+        const healthFill2 = document.getElementById('health-fill2');
+        
+        const stage = document.querySelector('.stage');
+        const stageWidth = stage.offsetWidth;
+        const stageHeight = stage.offsetHeight;
+
+        const playerSpeed = 5; // 移動速度
+        const jumpStrength = 7; // ジャンプの強さ
+        let gravity = 1; // 重力
+        let jumpVelocity1 = 0; // プレイヤー1のジャンプ速度
+        let jumpVelocity2 = 0; // プレイヤー2のジャンプ速度
+        let isJumping1 = false; // プレイヤー1がジャンプしているか
+        let isJumping2 = false; // プレイヤー2がジャンプしているか
+        let player1Position = { x: 100, y: 30, width: 50, height: 50 };
+        let player2Position = { x: 650, y: 30, width: 50, height: 50 };
+
+        // プレイヤーの位置を更新する関数
+        function movePlayer(player, targetX, targetY) {
+            targetX = Math.max(0, Math.min(stageWidth - 50, targetX)); // 左右制限
+            targetY = Math.max(30, Math.min(stageHeight - 50, targetY)); // 上下制限
+
+            player.style.left = targetX + 'px';
+            player.style.bottom = targetY + 'px';
+        }
+
+        // ジャンプを処理する関数
+        function jump(player) {
+            if (player === 1 && !isJumping1) {
+                jumpVelocity1 = jumpStrength;
+                isJumping1 = true;
+            } else if (player === 2 && !isJumping2) {
+                jumpVelocity2 = jumpStrength;
+                isJumping2 = true;
+            }
+        }
+
+        // プレイヤー同士の接触判定
+        function checkCollision(p1, p2) {
+            return !(p1.x + p1.width < p2.x || p1.x > p2.x + p2.width || p1.y + p1.height < p2.y || p1.y > p2.y + p2.height);
+        }
+
+        // 攻撃処理
+        function attack(player) {
+            if (player === 1 && checkCollision(player1Position, player2Position)) {
+                hp2--;  // プレイヤー2のHPを減らす
+                hp2Element.textContent = hp2;
+                healthFill2.style.width = (hp2 / 3) * 100 + '%'; // 体力バーの更新
+                if (hp2 <= 0) {
+                    alert("Player 1 wins!");
+                    startGame(); // ゲームリセット
+                }
+            }
+            if (player === 2 && checkCollision(player2Position, player1Position)) {
+                hp1--;  // プレイヤー1のHPを減らす
+                hp1Element.textContent = hp1;
+                healthFill1.style.width = (hp1 / 3) * 100 + '%'; // 体力バーの更新
+                if (hp1 <= 0) {
+                    alert("Player 2 wins!");
+                    startGame(); // ゲームリセット
+                }
+            }
+
+            // 攻撃時に剣を振るアニメーション
+            if (player === 1) {
+                sword1.style.transform = 'rotate(45deg)'; // 逆方向（左手）での攻撃
+                setTimeout(() => sword1.style.transform = 'rotate(0deg)', 200); // 0.2秒後に元に戻す
+            }
+            if (player === 2) {
+                sword2.style.transform = 'rotate(-45deg)'; // 右手での攻撃
+                setTimeout(() => sword2.style.transform = 'rotate(0deg)', 200); // 0.2秒後に元に戻す
+            }
+        }
+
+        // ゲーム開始時にリセット
+        function startGame() {
+            score1 = 0;
+            score2 = 0;
+            hp1 = 3;
+            hp2 = 3;
+            score1Element.textContent = score1;
+            score2Element.textContent = score2;
+            hp1Element.textContent = hp1;
+            hp2Element.textContent = hp2;
+            healthFill1.style.width = '100%'; // 体力バーのリセット
+            healthFill2.style.width = '100%'; // 体力バーのリセット
+            player1Position = { x: 100, y: 30, width: 50, height: 50 };
+            player2Position = { x: 650, y: 30, width: 50, height: 50 };
+            movePlayer(player1, player1Position.x, player1Position.y);
+            movePlayer(player2, player2Position.x, player2Position.y);
+        }
+
+        // プレイヤーの移動に関するフラグ
+        let moveLeft1 = false;
+        let moveRight1 = false;
+        let moveUp1 = false;
+        let moveDown1 = false;
+        let moveLeft2 = false;
+        let moveRight2 = false;
+        let moveUp2 = false;
+        let moveDown2 = false;
+
+        // キーが押された時の処理
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'w') moveUp1 = true;
+            if (event.key === 'a') moveLeft1 = true;
+            if (event.key === 's') moveDown1 = true;
+            if (event.key === 'd') moveRight1 = true;
+
+            if (event.key === 'ArrowUp') moveUp2 = true;
+            if (event.key === 'ArrowLeft') moveLeft2 = true;
+            if (event.key === 'ArrowDown') moveDown2 = true;
+            if (event.key === 'ArrowRight') moveRight2 = true;
+
+            if (event.key === 'q') attack(1);
+            if (event.key === '/') attack(2);
+
+            if (event.key === 'w') jump(1);
+            if (event.key === 'ArrowUp') jump(2);
+        });
+
+        // キーが離された時の処理
+        window.addEventListener('keyup', function(event) {
+            if (event.key === 'a') moveLeft1 = false;
+            if (event.key === 's') moveDown1 = false;
+            if (event.key === 'd') moveRight1 = false;
+            if (event.key === 'w') moveUp1 = false;
+
+            if (event.key === 'ArrowLeft') moveLeft2 = false;
+            if (event.key === 'ArrowDown') moveDown2 = false;
+            if (event.key === 'ArrowRight') moveRight2 = false;
+            if (event.key === 'ArrowUp') moveUp2 = false;
+        });
+
+        // ゲームループ
+        function gameLoop() {
+            if (moveLeft1) player1Position.x -= playerSpeed;
+            if (moveRight1) player1Position.x += playerSpeed;
+            if (moveUp1) player1Position.y += playerSpeed;
+            if (moveDown1) player1Position.y -= playerSpeed;
+
+            if (moveLeft2) player2Position.x -= playerSpeed;
+            if (moveRight2) player2Position.x += playerSpeed;
+            if (moveUp2) player2Position.y += playerSpeed;
+            if (moveDown2) player2Position.y -= playerSpeed;
+
+            // 重力とジャンプ
+            if (isJumping1) {
+                player1Position.y += jumpVelocity1;
+                jumpVelocity1 -= gravity;
+                if (player1Position.y <= 30) {
+                    player1Position.y = 30;
+                    isJumping1 = false;
+                }
+            }
+
+            if (isJumping2) {
+                player2Position.y += jumpVelocity2;
+                jumpVelocity2 -= gravity;
+                if (player2Position.y <= 30) {
+                    player2Position.y = 30;
+                    isJumping2 = false;
+                }
+            }
+
+            // プレイヤーの移動
+            movePlayer(player1, player1Position.x, player1Position.y);
+            movePlayer(player2, player2Position.x, player2Position.y);
+
+            // ゲームループの継続
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ガード状態を判定する変数
+let isGuarding1 = false;  // プレイヤー1がガードしているか
+let isGuarding2 = false;  // プレイヤー2がガードしているか
+
+// キーが押された時の処理
+window.addEventListener('keydown', function(event) {
+    // プレイヤー1のガード
+    if (event.key === 'e') {
+        isGuarding1 = true;
+        player1.classList.add('guard');  // ガード状態のクラスを追加
+    }
+    // プレイヤー2のガード
+    if (event.key === '\\') {
+        isGuarding2 = true;
+        player2.classList.add('guard');  // ガード状態のクラスを追加
+    }
+
+    // それ以外のキー処理（移動や攻撃）
+    if (event.key === 'w') moveUp1 = true;
+    if (event.key === 'a') moveLeft1 = true;
+    if (event.key === 's') moveDown1 = true;
+    if (event.key === 'd') moveRight1 = true;
+
+    if (event.key === 'ArrowUp') moveUp2 = true;
+    if (event.key === 'ArrowLeft') moveLeft2 = true;
+    if (event.key === 'ArrowDown') moveDown2 = true;
+    if (event.key === 'ArrowRight') moveRight2 = true;
+
+    if (event.key === 'q') attack(1);
+    if (event.key === '/') attack(2);
+
+    if (event.key === 'w') jump(1);
+    if (event.key === 'ArrowUp') jump(2);
+});
+
+// キーが離された時の処理
+window.addEventListener('keyup', function(event) {
+    // プレイヤー1のガード解除
+    if (event.key === 'e') {
+        isGuarding1 = false;
+        player1.classList.remove('guard');  // ガード状態のクラスを削除
+    }
+    // プレイヤー2のガード解除
+    if (event.key === '\\') {
+        isGuarding2 = false;
+        player2.classList.remove('guard');  // ガード状態のクラスを削除
+    }
+
+    // それ以外のキー処理（移動解除）
+    if (event.key === 'a') moveLeft1 = false;
+    if (event.key === 's') moveDown1 = false;
+    if (event.key === 'd') moveRight1 = false;
+    if (event.key === 'w') moveUp1 = false;
+
+    if (event.key === 'ArrowLeft') moveLeft2 = false;
+    if (event.key === 'ArrowDown') moveDown2 = false;
+    if (event.key === 'ArrowRight') moveRight2 = false;
+    if (event.key === 'ArrowUp') moveUp2 = false;
+});
+
+// 攻撃処理
+function attack(player) {
+    if (player === 1 && checkCollision(player1Position, player2Position)) {
+        if (!isGuarding2) {
+            hp2--;  // プレイヤー2のHPを1減らす
+        }
+        hp2Element.textContent = hp2;
+        healthFill2.style.width = (hp2 / 3) * 100 + '%'; // 体力バーの更新
+        if (hp2 <= 0) {
+            alert("Player 1 wins!");
+            startGame(); // ゲームリセット
+        }
+    }
+    
+    if (player === 2 && checkCollision(player2Position, player1Position)) {
+        if (!isGuarding1) {
+            hp1--;  // プレイヤー1のHPを1減らす
+        }
+        hp1Element.textContent = hp1;
+        healthFill1.style.width = (hp1 / 3) * 100 + '%'; // 体力バーの更新
+        if (hp1 <= 0) {
+            alert("Player 2 wins!");
+            startGame(); // ゲームリセット
+        }
+    }
+
+    // 攻撃時に剣を振るアニメーション
+    if (player === 1) {
+        sword1.style.transform = 'rotate(45deg)'; // 逆方向（左手）での攻撃
+        setTimeout(() => sword1.style.transform = 'rotate(0deg)', 200); // 0.2秒後に元に戻す
+    }
+    if (player === 2) {
+        sword2.style.transform = 'rotate(-45deg)'; // 右手での攻撃
+        setTimeout(() => sword2.style.transform = 'rotate(0deg)', 200); // 0.2秒後に元に戻す
+    }
+}
+
+
+        gameLoop();
+    </script>
+</body>
+</html>
