@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header with Dropdown Menu</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden; /* 横スクロールを無効に */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* パララックスの背景 */
+        .parallax {
+            position: relative;
+            height: 70vh;
+            background-image: url('ブロスタ2.jpg'); /* 背景画像 */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: -1;
+            transform: translateZ(0);
+        }
+
+        .content {
+            position: relative;
+            padding: 20px;
+            text-align: center;
+            z-index: 1; /* コンテンツが背景より前面に来るように */
+        }
+
+        /* ヘッダーのスタイル */
+        header {
+            background-color: rgba(29, 31, 32, 0.9); /* ヘッダーの背景に透過を追加 */
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 左寄せにする */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* ヘッダーに影を追加 */
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li {
+            position: relative; /* 子メニューの位置を相対的に設定 */
+        }
+
+        nav ul li a {
+            color: #808080;
+            text-decoration: none;
+            padding: 5px 10px;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: white;
+        }
+
+        /* プルダウンメニューのスタイル */
+        nav ul li ul {
+            display: none; /* 初めは非表示 */
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: rgba(29, 31, 32, 0.9);
+            padding: 10px 0;
+            width: 150px; /* サブメニューの幅 */
+        }
+
+        /* メニュー項目にホバーした時にプルダウンを表示 */
+        nav ul li:hover > ul {
+            display: block;
+        }
+
+        nav ul li ul li {
+            width: 100%;
+        }
+
+        nav ul li ul li a {
+            color: #808080;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+
+        nav ul li ul li a:hover {
+            color: white;
+        }
+
+        /* フッターのスタイル */
+        footer {
+            background-color: rgba(29, 31, 32, 0.9);
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3); /* フッターに影を追加 */
+            z-index: 10;
+        }
+
+        .content {
+            padding: 20px;
+            margin-top: 80px; /* ヘッダーの高さ分の余白 */
+            height: 2000px; /* サンプルコンテンツの高さ */
+        }
+
+        .section {
+            height: 100vh;
+        }
+
+        .parallax2 {
+            background-image: url('ブロスタ.jpg'); /* もう一つの背景画像 */
+            height: 60vh;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- パララックス背景セクション -->
+    <div class="parallax"></div>
+
+    <!-- ヘッダー -->
+    <header>
+        <div class="logo">
+            <a href="https://www.ubdc.ac.jp/" target="_blank">
+                <img src="UBDC.png" alt="Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li>
+                    <a href="#">Mini Games</a>
+                    <ul>
+                        <li><a href="#">Game 1</a></li>
+                        <li><a href="#">Game 2</a></li>
+                        <li><a href="#">Game 3</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- コンテンツ部分 -->
+    <div class="content section">
+        <h1>Welcome to the Mini Game!</h1>
+        <p>This is a sample content area. Scroll down to see the parallax effect in action.</p>
+    </div>
+
+    <!-- 2つ目のパララックス背景 -->
+    <div class="parallax2 section"></div>
+
+    <div class="content section">
+        <h1>Another Content Section</h1>
+        <p>More content here, scroll to see the parallax effect on different sections!</p>
+    </div>
+
+    <!-- フッター -->
+    <footer>
+        <p>&copy; 2024 Your Website. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
