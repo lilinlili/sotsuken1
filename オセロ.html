@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オセロゲーム</title>
+    <link rel="stylesheet" href="オセロ.css"> <!-- 外部CSSファイルをリンク -->
+</head>
+<body>
+    <div>
+        <h1>オセロゲーム</h1>
+        <table id="board"></table>
+        
+        <!-- status と passButton を横並びにする -->
+        <div id="statusAndPass">
+            <p id="status"></p>
+            <button id="passButton" disabled>パス</button>
+        </div>
+
+        <p id="winnerMessage">
+            <span id="winnerText"></span>
+            <button id="restartButton" style="display:none;">再スタート</button>
+        </p> <!-- 勝者メッセージを表示するための要素 -->
+    </div>
+    <script src="オセロ.js"></script> <!-- 外部JavaScriptファイルをリンク -->
+</body>
+</html>
+
+

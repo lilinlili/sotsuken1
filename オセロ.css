@@ -1,0 +1,131 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('バトル背景２.jpg'); /* 背景画像を設定 */
+    background-size: cover; /* 画面全体を覆う */
+    background-position: center; /* 中央に配置 */
+    background-repeat: no-repeat; /* 繰り返さない */
+}
+
+table {
+    border-collapse: collapse;
+    background-color: green;
+    margin: 20px;
+}
+
+td {
+    width: 60px;
+    height: 60px;
+    border: 1px solid black;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    position: relative;
+}
+
+.disk {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.X.disk {
+    background-color: black;
+}
+
+.O.disk {
+    background-color: white;
+    border: 1px solid black;
+}
+
+/* 親要素に flexbox を使用 */
+.container {
+    display: flex;
+    justify-content: space-between;  /* 左右に要素を配置 */
+    align-items: center;  /* 縦方向に中央揃え */
+}
+
+/* ステータスのスタイル */
+#status {
+    text-align: center;
+    font-size: 20px;
+    margin-top: 20px;
+    flex-grow: 1;  /* ステータスが中央に来るようにする */
+}
+
+/* パスボタンのスタイル */
+#passButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 0px;
+}
+
+/* statusとpassButtonを横並びに配置 */
+#statusAndPass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#winnerMessage {
+    display: flex;  /* flexboxを使用 */
+    flex-direction: column;  /* 子要素を縦に並べる */
+    justify-content: center;  /* 縦方向に中央揃え */
+    align-items: center;  /* 横方向に中央揃え */
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    border: 2px solid black;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+
+    /* 画面の縦軸中央に配置 */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;  /* メッセージが他の要素の上に表示されるように */
+}
+
+/* #restartButton のスタイル */
+#restartButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    background-color: #4CAF50;  /* 緑色の背景 */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    margin-left: auto;  /* ボタンを中央に寄せる */
+    margin-right: auto; /* ボタンを中央に寄せる */
+}
+
+/* ホバー時の背景色変更 */
+#restartButton:hover {
+    background-color: #45a049;  /* ホバー時に少し暗く */
+}
+
+
+
+
+
+

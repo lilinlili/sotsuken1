@@ -1,0 +1,53 @@
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+}
+
+#gameCanvas {
+    background-color: #000;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#timer {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+#gameOverMessage {
+    display: none;
+    font-size: 24px;
+    color: yellow;
+    margin-top: 20px;
+}
+
+#ranking {
+    margin-top: 20px;
+}
+
+#rankingList {
+    list-style: none;
+    padding: 0;
+}
+
+#rankingList li {
+    font-size: 18px;
+}
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.info-container {
+    margin-left: 20px;
+    text-align: left;
+}

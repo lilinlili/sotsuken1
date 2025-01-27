@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>コインめくりゲーム</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="コインフリップ.css">
+</head>
+<body>
+    <!-- BGM要素 -->
+    <audio id="bgm" autoplay loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+        <!-- 対応していないブラウザへの通知 -->
+        お使いのブラウザはオーディオタグをサポートしていません。
+    </audio>
+
+    <div class="wrapper">
+        <ul class="sheet"></ul> <!-- ゲームのコインが並ぶ場所 -->
+        <div class="bg_pt"></div>
+        <div class="start-screen" id="start-screen">
+            <h1>コインめくりゲーム🐗</h1>
+            <button id="start-btn">ゲームスタート🐼</button>
+        </div>
+        <div class="start-background"></div>
+        <div class="start-background1"></div>
+        <!-- 中央配置されたメッセージ -->
+        <div class="centered-message">
+            <!-- クラッカーの要素 -->
+            <div id="confetti"></div>
+            <div id="game-over" style="display: none;">ゲームオーバー！🐺</div> <!-- ゲームオーバーまたは成功メッセージ -->
+            <button id="restart-btn" style="display: none;">もう一度プレイ🐧</button> <!-- リスタートボタン -->
+            <button id="quit-btn" style="display: none;">やめる🐶</button>
+        </div>
+    </div>
+    <script src="コインフリップ.js"></script>
+</body>
+</html>

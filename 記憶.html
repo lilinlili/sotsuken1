@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Short-term memory GAME</title>
+    <link rel="stylesheet" href="記憶.css">
+</head>
+<body>
+    <!-- スタート画面 -->
+
+    <div class="start-screen" id="start-screen">
+        <div class="line"></div> <!-- 線を引くための要素 -->
+        <div class="line2"></div> <!-- 線を引くための要素 -->
+        <h1>記憶ゲーム レベル１～３🐧</h1>
+        <button id="start-btn">ゲームスタート🐺</button>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <main id="game-screen" style="display: none;">
+        <div id="modal"></div>
+        <table></table>
+        <button id="btn" class="hidden">スタート🐼</button> <!-- ゲーム用のスタートボタン -->
+    </main>
+
+    <script src="記憶.js"></script>
+</body>
+</html>
+
+
