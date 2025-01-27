@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スライダーパズル</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      background: url('パズル背景.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    #left-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.5s ease;
+      position: static;
+    }
+    #left-panel.center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    #timer {
+      font-size: 24px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    #puzzle {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      visibility: hidden;
+    }
+    .tile {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: url('木.jpg') no-repeat center center;
+      background-size: cover;
+      color: black;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border: 2px solid #8b5a2b;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+    .empty {
+      background: none;
+      cursor: default;
+      border: none;
+      box-shadow: none;
+    }
+    #startButton {
+      font-size: 18px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    #startButton:hover {
+      background-color: #45a049;
+    }
+    #description {
+      font-size: 18px;
+      color: #555;
+      max-width: 300px;
+      text-align: left;
+    }
+    #completionModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      padding: 20px;
+      display: none;
+      z-index: 1000;
+    }
+    #completionModal h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    #completionModal p {
+      font-size: 18px;
+      margin: 0;
+    }
+    #completionModal button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #completionModal button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="left-panel">
+    <div id="title">スライダーパズル</div>
+    <button id="startButton">スタート</button>
+    <div id="timer">タイマー: 0秒</div>
+    <div id="puzzle"></div>
+  </div>
+  <div id="description">
+    パズルを完成させるとタイマーが止まります！<br>
+    空白をうまく使ってタイルを動かしてください。
+  </div>
+
+  <div id="completionModal">
+    <h1>完成！</h1>
+    <p id="completionTime"></p>
+    <button id="restartButton">もう一度</button>
+  </div>
+
+  <script>
+    const puzzle = document.getElementById('puzzle');
+    const timerElement = document.getElementById('timer');
+    const startButton = document.getElementById('startButton');
+    const leftPanel = document.getElementById('left-panel');
+    const completionModal = document.getElementById('completionModal');
+    const completionTime = document.getElementById('completionTime');
+    const restartButton = document.getElementById('restartButton');
+    const size = 4;
+    let tiles = [];
+    let timer = 0;
+    let interval;
+    let isGameActive = false;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function initPuzzle() {
+      tiles = [...Array(size * size).keys()];
+      shuffle(tiles);
+      renderPuzzle();
+      resetTimer();
+      isGameActive = false;
+    }
+
+    function renderPuzzle() {
+      puzzle.innerHTML = '';
+      tiles.forEach((tile, index) => {
+        const tileElement = document.createElement('div');
+        tileElement.className = 'tile';
+        if (tile === 0) {
+          tileElement.classList.add('empty');
+        } else {
+          tileElement.textContent = tile;
+          tileElement.addEventListener('click', () => moveTile(index));
+        }
+        puzzle.appendChild(tileElement);
+        updateTilePosition(tileElement, index);
+      });
+    }
+
+    function updateTilePosition(tileElement, index) {
+      const row = Math.floor(index / size);
+      const col = index % size;
+      tileElement.style.transform = `translate(${col * 105}px, ${row * 105}px)`;
+    }
+
+    function moveTile(index) {
+      if (!isGameActive) return;
+
+      const emptyIndex = tiles.indexOf(0);
+      const row = Math.floor(index / size);
+      const col = index % size;
+      const emptyRow = Math.floor(emptyIndex / size);
+      const emptyCol = emptyIndex % size;
+
+      if (Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1) {
+        [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        renderPuzzle();
+        checkWinCondition();
+      }
+    }
+
+    function checkWinCondition() {
+      const correctOrder = [
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        9, 10, 11, 12,
+        13, 14, 15, 0
+      ];
+
+      const isSolved = tiles.every((tile, index) => tile === correctOrder[index]);
+
+      if (isSolved) {
+        isGameActive = false;
+        clearInterval(interval);
+        completionTime.textContent = `タイム: ${timer}秒`;
+        completionModal.style.display = 'block';
+      }
+    }
+
+    function resetTimer() {
+      timer = 0;
+      updateTimerDisplay();
+    }
+
+    function startTimer() {
+      clearInterval(interval);
+      interval = setInterval(() => {
+        if (isGameActive) {
+          timer++;
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      timerElement.textContent = `タイマー: ${timer}秒`;
+    }
+
+    startButton.addEventListener('click', () => {
+      startButton.style.display = 'none';
+      timerElement.style.display = 'block';
+      puzzle.style.visibility = 'visible';
+      leftPanel.classList.add('center');
+      isGameActive = true;
+      startTimer();
+    });
+
+    restartButton.addEventListener('click', () => {
+      completionModal.style.display = 'none';
+      initPuzzle();
+      startButton.style.display = 'block';
+      timerElement.style.display = 'none';
+      puzzle.style.visibility = 'hidden';
+      leftPanel.classList.remove('center');
+    });
+
+    initPuzzle();
+  </script>
+</body>
+</html>

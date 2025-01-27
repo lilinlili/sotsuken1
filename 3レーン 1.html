@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Lane</title>
+  <style>
+   body {
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Arial', sans-serif;
+  background-color: #121212; /* 背景色を変更してゲーム全体の雰囲気を向上 */
+}
+canvas {
+  display: block;
+}
+#title-screen, #game-over, #countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+}
+#title-screen {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 50px;
+  border-radius: 15px;
+}
+#title-screen h1 {
+  font-size: 6em;
+  color: #ffffff; /* タイトル文字色 */
+}
+    .glowing {
+      font-size: 2em;
+      color: white;
+      text-shadow: 0 0 5px #003cff, 0 0 10px #003cff, 0 0 20px #003cff,
+                   0 0 40px #003cff, 0 0 60px #003cff;
+    }
+#title-screen button, #game-over button {
+  margin-top: 20px;
+  padding: 15px 60px;
+  font-size: 2.5em;
+  cursor: pointer;
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+#title-screen button:hover, #game-over button:hover {
+  background-color: #004c99;
+  transform: scale(1.05);
+}
+#live-score {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.8em;
+  color: #ffffff;
+  background-color: rgba(70, 102, 243, 0.6);
+  padding: 10px 20px;
+  border-radius: 8px;
+  z-index: 10;
+  font-weight: bold;
+}
+#game-over {
+  display: none; /* 初期は非表示 */
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#game-over h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+}
+.glowing2 {
+      font-size: 2em;
+      color: white;
+      text-shadow: 0 0 5px #fa3b3b, 0 0 10px #fa3b3b, 0 0 20px #fa3b3b,
+                   0 0 40px #fa3b3b, 0 0 60px #fa3b3b;
+    }
+
+#game-over h1 {
+  font-size: 3.5em;
+  color: hwb(0 5% 93%);
+}
+#game-over p {
+  font-size: 1.5em;
+  margin-bottom: 30px;
+}
+
+#back-to-title {
+  font-size: 1.2em;
+  color: #ffffff;
+  text-decoration: none;
+  border: 1px solid #ffffff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#back-to-title:hover {
+  background-color: #0066cc;
+  color: #ffffff;
+}
+
+  #countdown {
+    display: none;
+    font-size: 7em;
+    color: #ffffff; /* 白色で表示 */
+    text-shadow: 2px 2px 5px #443eed; /* 黒い縁取りで視認性を向上 */
+    font-weight: bold;
+  }
+
+  #ranking {
+  margin-top: 20px;
+  color: #ffffff; /* 白色で表示 */
+}
+#ranking2 {
+  margin-top: 20px;
+  color: #ffffff; /* 白色で表示 */
+}
+#ranking3 {
+  margin-top: 20px;
+  color: #ffffff; /* 白色で表示 */
+}
+#score-label,
+#final-score {
+  font-size: 2em; /* 好みのサイズに調整 */
+  font-weight: bold; /* 太字にする場合 */
+  color: #ffffff; /* 好みの色を設定 */
+}
+
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+<!-- タイトル画面 -->
+<div id="title-screen">
+  <h1 class="glowing">Block Lane</h1>
+  <button onclick="startGame()">START</button>
+  <section id="ranking">
+    <h2>矢印キーで操作</h2>
+  <section id="ranking2">  
+    <h3>← →　 左右に移動</h3>
+  <section id="ranking3">
+      <h4>↑ 　　　ジャンプ</h4>
+    </h2>
+  </section>
+</div>
+
+<div id="live-score" style="display: none;">スコア: 0</div>
+
+<!-- カウントダウン画面 -->
+<div id="countdown"></div>
+
+<!-- ゲームオーバー画面 -->
+<div id="game-over">
+  <h1 class="glowing">GAME OVER</h1>
+  <p><span id="score-label">スコア:</span> <span id="final-score">0</span></p>
+  <a id="back-to-title" href="3レーン.html">タイトルへ戻る</a>
+</div>
+
+
+<script>
+  let scene, camera, renderer, player, obstacles, score;
+  let currentLane = 1;
+  const lanes = [-4, 0, 4]; // レーン位置
+  const obstacleSpeed = 0.4;
+  let speedIncrementInterval; // スピード増加のインターバル管理用
+  let isGameOver = false;
+  let isJumping = false; // ジャンプ中かどうか
+  let jumpSpeed = 0.03; // ジャンプ速度
+  let jumpHeight = 2.5; // ジャンプの高さ
+  let jumpProgress = 0.2; // ジャンプの進行度
+  let gameLoop; // ゲームのアニメーションループ
+  let obstacleInterval; // 障害物生成用のインターバル
+  let coins = []; // コインを格納する配列
+  let ranking = [];
+  let obstacleIntervalTime = 2000; // 初期間隔
+
+function reduceObstacleInterval() {
+  if (obstacleIntervalTime > 400) { // 最小間隔を200msに制限
+    obstacleIntervalTime -= 300; // 徐々に間隔を短縮
+    clearInterval(obstacleInterval); // 現在のインターバルをクリア
+    obstacleInterval = setInterval(() => {
+      createObstacle();
+      createCoin();
+    }, obstacleIntervalTime);
+    console.log("障害物生成間隔:", obstacleIntervalTime);
+  }
+}
+
+// ゲーム開始時にインターバル短縮の仕組みを追加
+speedIncrementInterval = setInterval(reduceObstacleInterval, 7000); // 10秒ごとに間隔を短縮
+
+
+
+
+
+// ゲームオーバー処理の改善
+function gameOver() {
+  isGameOver = true;
+
+  document.getElementById('game-over').style.display = 'block';
+  document.getElementById('final-score').textContent = score;
+
+  // スコアを一瞬輝かせるエフェクト
+  const finalScore = document.getElementById('final-score');
+  finalScore.style.animation = 'pulse 1s infinite';
+
+  cancelAnimationFrame(gameLoop);
+  clearInterval(obstacleInterval);
+}
+
+
+
+  // ゲーム初期化
+  function initGame() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 10, 10);
+    scene.add(light);
+
+    const groundGeometry = new THREE.PlaneGeometry(20, 100);
+    const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x444444 });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const playerMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.position.set(0, 0.5, -10);
+    scene.add(player);
+
+    obstacles = [];
+    score = 0;
+
+    camera.position.set(0, 5, -15);
+    camera.lookAt(0, 0, 0);
+
+    setupKeyControls();
+  }
+
+  // レーン線の追加
+  function drawLanes() {
+    const laneLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    for (let lane = 1; lane < lanes.length; lane++) {
+      const xPos = (lanes[lane - 1] + lanes[lane]) / 2;
+      const laneGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(xPos, 0.01, 50),
+        new THREE.Vector3(xPos, 0.01, -50),
+      ]);
+      const laneLine = new THREE.Line(laneGeometry, laneLineMaterial);
+      scene.add(laneLine);
+    }
+  }
+
+  function increaseSpeed() {
+  obstacleSpeed += 10; // スピードを徐々に上げる
+  console.log("スピードアップ:", obstacleSpeed);
+}
+
+function updateGameDifficulty() {
+  if (score % 1000 === 0) {
+    increaseSpeed();
+    reduceObstacleInterval();
+    console.log("難易度アップ！スコア:", score);
+  }
+}
+
+function animate() {
+  if (isGameOver) return;
+
+  gameLoop = requestAnimationFrame(animate);
+
+  updatePlayerJump();
+  updateObstacles();
+  updateCoins();
+
+  // スコアを更新
+  score += 1;
+
+  // 難易度調整
+  updateGameDifficulty();
+
+  document.getElementById('live-score').textContent = `スコア: ${score}`;
+  renderer.render(scene, camera);
+}
+
+  // コインを作成
+function createCoin() {
+  if (coins.length >= 150) return; // コインが多すぎる場合は生成を制限
+
+  const coinGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+  const coinMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 }); // 金色
+  const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+
+  const lane = Math.floor(Math.random() * lanes.length);
+  coin.position.set(lanes[lane], 0.5, 30); // ランダムなレーンに配置
+  coins.push(coin);
+  scene.add(coin);
+}
+
+// コイン取得エフェクトを作成
+function createCoinEffect(position) {
+  const particleCount = 20;
+  const particleGeometry = new THREE.BufferGeometry();
+  const positions = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    const x = position.x + (Math.random() - 0.5) * 2;
+    const y = position.y + (Math.random() - 0.5) * 2;
+    const z = position.z + (Math.random() - 0.5) * 2;
+    positions.push(x, y, z);
+  }
+
+  particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const particleMaterial = new THREE.PointsMaterial({ color: 0xffd700, size: 0.1 });
+  const particles = new THREE.Points(particleGeometry, particleMaterial);
+
+  scene.add(particles);
+
+  // パーティクルの寿命
+  setTimeout(() => {
+    scene.remove(particles);
+  }, 150); // 1秒後に削除
+}
+
+// コインの更新処理
+function updateCoins() {
+  for (let i = coins.length - 1; i >= 0; i--) {
+    const coin = coins[i];
+    coin.position.z -= obstacleSpeed; // コインを移動させる
+
+    if (coin.position.z < -15) {
+      scene.remove(coin);
+      coins.splice(i, 1); // 範囲外のコインを削除
+    }
+
+    // プレイヤーがコインに接触したか判定
+    if (
+      Math.abs(coin.position.z - player.position.z) < 1 &&
+      Math.abs(coin.position.x - player.position.x) < 1 &&
+      !isJumping
+    ) {
+      createCoinEffect(coin.position); // エフェクトを呼び出し
+      scene.remove(coin);
+      coins.splice(i, 1); // コインを削除
+      score += 300; // スコアを加算
+      document.getElementById('live-score').textContent = `スコア: ${score}`;
+    }
+  }
+}
+
+
+  // 障害物を作成
+  function createObstacle() {
+    if (obstacles.length >= 150) return;
+
+
+    const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const obstacleMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+
+    const lane = Math.floor(Math.random() * lanes.length);
+    obstacle.position.set(lanes[lane], 0.5, 30);
+    obstacles.push(obstacle);
+    scene.add(obstacle);
+  }
+
+  // 修正箇所：スコア表示管理のための関数
+function toggleLiveScore(show) {
+  const liveScore = document.getElementById('live-score');
+  liveScore.style.display = show ? 'block' : 'none';
+}
+
+
+  // アニメーションループ
+  function animate() {
+    if (isGameOver) return;
+
+    gameLoop = requestAnimationFrame(animate);
+
+    updatePlayerJump();
+    updateObstacles();
+    updateCoins(); // コインの更新を追加
+
+
+    // スコアを更新
+    score += 1;
+
+    // プレイ中のスコアを左上に表示
+  document.getElementById('live-score').textContent = `スコア: ${score}`;
+
+    
+    renderer.render(scene, camera);
+  }
+
+  // プレイヤーのジャンプ処理
+  function updatePlayerJump() {
+    if (isJumping) {
+      jumpProgress += jumpSpeed;
+      player.position.y = Math.sin(jumpProgress * Math.PI) * jumpHeight + 0.5;
+      if (jumpProgress >= 1) {
+        isJumping = false;
+        jumpProgress = 0;
+        player.position.y = 0.1; // 元の高さに戻す
+        if (!isJumping && event.key === 'ArrowLeft' && currentLane < lanes.length - 1) {
+  currentLane++;
+  player.position.x = lanes[currentLane];
+}
+      }
+    }
+  }
+
+  // 障害物の更新
+  function updateObstacles() {
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const obstacle = obstacles[i];
+      obstacle.position.z -= obstacleSpeed;
+
+      if (obstacle.position.z < -15) {
+        scene.remove(obstacle);
+        obstacles.splice(i, 1);
+      }
+
+      if (
+        Math.abs(obstacle.position.z - player.position.z) < 1 &&
+        Math.abs(obstacle.position.x - player.position.x) < 1 &&
+        !isJumping
+      ) {
+        gameOver();
+      }
+    }
+  }
+
+
+
+
+
+  // キーボード操作
+  // 修正版の setupKeyControls 関数
+function setupKeyControls() {
+  window.addEventListener('keydown', (event) => {
+    if (isGameOver|| isJumping) return;// ゲームオーバーまたはジャンプ中は操作無効
+
+    if (event.key === 'ArrowLeft' && currentLane < lanes.length - 1) {
+      // 左矢印キーで右に移動 (逆なので修正)
+      currentLane++;
+      player.position.x = lanes[currentLane];
+    } else if (event.key === 'ArrowRight' && currentLane > 0) {
+      // 右矢印キーで左に移動 (逆なので修正)
+      currentLane--;
+      player.position.x = lanes[currentLane];
+    } else if (event.key === 'ArrowUp' && !isJumping) {
+      isJumping = true;
+    }
+  });
+}
+
+ // カウントダウン文字色改善
+ function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('countdown').style.display = 'block';
+
+  let countdown = 3;
+  document.getElementById('countdown').textContent = countdown;
+
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      document.getElementById('countdown').textContent = countdown;
+    } else {
+      clearInterval(countdownInterval);
+      document.getElementById('countdown').style.display = 'none';
+
+      initGame(); // ゲームの初期化
+      drawLanes(); // レーンの表示
+      toggleLiveScore(true); // スコア表示を有効化
+      gameLoop = requestAnimationFrame(animate); // ゲームのアニメーション開始
+
+      // スピードを一定間隔で上げる
+      speedIncrementInterval = setInterval(increaseSpeed, 5000); // 5秒ごとにスピードアップ
+
+      // 障害物とコインの生成を定期的に実行
+      obstacleInterval = setInterval(() => {
+        createObstacle();
+        createCoin();
+      }, 1500); // 1.5秒ごとに生成
+    }
+  }, 1000); // 1秒間隔でカウントダウン
+}
+
+// スコア表示を切り替える関数
+function toggleLiveScore(show) {
+  const liveScore = document.getElementById('live-score');
+  liveScore.style.display = show ? 'block' : 'none';
+}
+  
+
+  // 初期化時にランキングを表示
+  saveScore();
+  updateRanking();
+</script>
+</body>
+</html>

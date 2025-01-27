@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルシューティングゲーム</title>
+    <style>
+        body { margin: 0; background-image: url('宇宙2.jpg'); color: #ffffff; text-align: center; font-family: Arial, sans-serif; }
+        canvas { background-image: url('白背景2.jpg'); display: block; margin: 20px auto; }
+        #startButton { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #finalScore, #countdown { 
+            display: none; 
+            font-size: 48px; 
+            color: #000000; 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <h1>シューティングゲーム</h1>
+    <button id="startButton">スタート</button>
+    <canvas id="gameCanvas" width="600" height="400" style="display: none;"></canvas>
+    <p>矢印キーで移動、スペースキーで発射</p>
+    <p>スコア: <span id="score">0</span> | ライフ: <span id="lives">5</span> | 残り時間: <span id="timer">30</span>秒</p>
+    <div id="finalScore">スコア: 0</div>
+    <div id="countdown">3</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const timerDisplay = document.getElementById('timer');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const countdownDisplay = document.getElementById('countdown');
+
+        // ゲーム設定
+        const playerWidth = 50, playerHeight = 50;
+        let score = 0;
+        let lives = 5;
+        let timeRemaining = 30;  // 制限時間30秒
+        let isGameRunning = false;
+        let timerInterval;
+        let playerX;
+
+        // 速度設定
+        let playerSpeed = 13;
+        let enemySpeed = 14;
+        const bulletSpeed = 13;
+
+        const bullets = [];
+        const enemies = [];
+
+        // 画像オブジェクト
+        const playerImg = new Image();
+        const enemyImg = new Image();
+        const bulletImg = new Image();
+
+        // 画像ソース
+        playerImg.src = '飛行機.png';
+        enemyImg.src = 'ウイルス.png';
+        bulletImg.src = '弾.png';
+
+        // キー入力管理
+        const keys = {};
+        let isBulletFired = false;
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space' && !isBulletFired) {
+                shootBullet();
+                isBulletFired = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            if (e.code === 'Space') {
+                isBulletFired = false;
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            finalScoreDisplay.style.display = 'none';
+            canvas.style.display = 'block';
+            resetPlayerPosition();
+            score = 0;
+            lives = 5;
+            timeRemaining = 30;
+            scoreDisplay.innerText = score;
+            livesDisplay.innerText = lives;
+            timerDisplay.innerText = timeRemaining;
+            startCountdown();
+        });
+
+        function startCountdown() {
+            let countdown = 3;
+            countdownDisplay.innerText = countdown;
+            countdownDisplay.style.display = 'block';
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownDisplay.innerText = countdown;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownDisplay.style.display = 'none';
+                    isGameRunning = true;
+                    startTimer();
+                    gameLoop();
+                }
+            }, 1000);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    timerDisplay.innerText = timeRemaining;
+                } else {
+                    endGame("時間切れ！ゲームオーバー！");
+                }
+            }, 1000);
+        }
+
+        function resetPlayerPosition() {
+            playerX = (canvas.width - playerWidth) / 2;
+        }
+
+        function drawPlayer() {
+            ctx.drawImage(playerImg, playerX, canvas.height - playerHeight - 10, playerWidth, playerHeight);
+        }
+
+        function shootBullet() {
+            bullets.push({ x: playerX + playerWidth / 2 - 5, y: canvas.height - playerHeight - 10 });
+        }
+
+        function drawBullets() {
+            bullets.forEach((bullet, index) => {
+                bullet.y -= bulletSpeed;
+                ctx.drawImage(bulletImg, bullet.x, bullet.y, 10, 20);
+                if (bullet.y < 0) bullets.splice(index, 1);
+            });
+        }
+
+        function spawnEnemy() {
+            const x = Math.random() * (canvas.width - 40);
+            enemies.push({ x, y: -20 });
+        }
+
+        function drawEnemies() {
+            enemies.forEach((enemy, index) => {
+                enemy.y += enemySpeed;
+                ctx.drawImage(enemyImg, enemy.x, enemy.y, 40, 40);
+                if (enemy.y > canvas.height) enemies.splice(index, 1);
+            });
+        }
+
+        function detectCollisions() {
+            bullets.forEach((bullet, bIndex) => {
+                enemies.forEach((enemy, eIndex) => {
+                    if (bullet.x < enemy.x + 40 && bullet.x + 10 > enemy.x &&
+                        bullet.y < enemy.y + 40 && bullet.y + 20 > enemy.y) {
+
+                        bullets.splice(bIndex, 1);
+                        enemies.splice(eIndex, 1);
+                        score++;
+                        scoreDisplay.innerText = score;
+                    }
+                });
+            });
+        }
+
+        function checkPlayerCollision() {
+            enemies.forEach((enemy, index) => {
+                if (enemy.x < playerX + playerWidth && enemy.x + 40 > playerX &&
+                    enemy.y + 40 > canvas.height - playerHeight - 10) {
+                    enemies.splice(index, 1);
+                    lives--;
+                    livesDisplay.innerText = lives;
+
+                    if (lives <= 0) {
+                        endGame("ライフがなくなりました！ゲームオーバー！");
+                    }
+                }
+            });
+        }
+
+        function endGame(message) {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            alert(message);
+
+            finalScoreDisplay.innerText = `最終スコア: ${score}`;
+            finalScoreDisplay.style.display = 'block';
+
+            startButton.style.display = 'inline-block';
+            canvas.style.display = 'none';
+        }
+
+        function gameLoop() {
+            if (!isGameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (keys['ArrowLeft'] && playerX > 0) playerX -= playerSpeed;
+            if (keys['ArrowRight'] && playerX < canvas.width - playerWidth) playerX += playerSpeed;
+
+            drawPlayer();
+            drawBullets();
+            drawEnemies();
+            detectCollisions();
+            checkPlayerCollision();
+
+            if (Math.random() < 0.1) spawnEnemy();
+
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>

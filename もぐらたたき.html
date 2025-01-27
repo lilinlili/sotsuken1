@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>モグラたたきゲーム</title>
+  <style>
+    body {
+      background-image: url('草原2.png');
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+
+    .holes {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+
+    .hole {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-image: url('モグラ穴2.png');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .mole {
+      width: 80px;
+      height: 80px;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+    }
+
+    .mole.show {
+      display: block;
+    }
+
+    .mole {
+      display: none;
+    }
+
+    #game-info {
+      text-align: center;
+      color: white;
+    }
+
+    #next-stage-button {
+      display: none;
+      margin-top: 10px;
+    }
+
+    #start-stage3-button {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-info">
+    <p>スコア: <span id="score">0</span></p>
+    <p>時間: <span id="time">15</span>秒</p>
+    <p>ライフ: <span id="life">❤️❤️❤️❤️❤️</span></p>
+    <p>ステージ: <span id="stage">1</span></p>
+    <button id="start-button">ゲーム開始</button>
+    <button id="next-stage-button">次のステージを開始</button>
+    <button id="start-stage3-button">ステージ3を開始</button>
+  </div>
+  <div class="holes" id="holes"></div>
+
+  <script>
+    const holesContainer = document.getElementById('holes');
+    const scoreElement = document.getElementById('score');
+    const timeElement = document.getElementById('time');
+    const lifeElement = document.getElementById('life');
+    const startButton = document.getElementById('start-button');
+    const nextStageButton = document.getElementById('next-stage-button');
+    const startStage3Button = document.getElementById('start-stage3-button');
+    const stageElement = document.getElementById('stage');
+
+    let score = 0;
+    let time = 15;
+    let lives = 5;
+    let stage = 1;
+    let gameInterval;
+    let moleInterval;
+    let moleTimeouts = [];
+    let isGameRunning = false;
+
+    let moleHitThisTurn = false;
+    let hitCount = 0;
+
+    function createHoles(count = 6) {
+      holesContainer.innerHTML = '';
+      const cols = count > 6 ? 5 : 3; // ステージ3では5列, それ以外は3列
+      holesContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      for (let i = 0; i < count; i++) {
+        const hole = document.createElement('div');
+        hole.classList.add('hole');
+        holesContainer.appendChild(hole);
+      }
+    }
+
+    function getRandomHoles(count) {
+      const holeArray = Array.from(holesContainer.querySelectorAll('.hole'));
+      const randomHoles = [];
+      while (randomHoles.length < count) {
+        const randomIndex = Math.floor(Math.random() * holeArray.length);
+        const hole = holeArray[randomIndex];
+        if (!randomHoles.includes(hole)) {
+          randomHoles.push(hole);
+        }
+      }
+      return randomHoles;
+    }
+
+    function showMoles() {
+      if (!isGameRunning) return;
+
+      moleHitThisTurn = false;
+      const randomHoles = getRandomHoles(2);
+
+      randomHoles.forEach(hole => {
+        const mole = document.createElement('img');
+        mole.src = 'モグライラスト3.png';
+        mole.alt = 'モグラ';
+        mole.classList.add('mole', 'show');
+        hole.appendChild(mole);
+
+        mole.addEventListener('click', () => {
+          if (!isGameRunning || mole.src.includes('clicked-mole.png')) return;
+          mole.src = 'モグライラスト2.png';
+          moleHitThisTurn = true;
+
+          // 1体につき10点追加
+          score += 10;
+          hitCount++;
+          scoreElement.textContent = score;
+
+          if (hitCount >= 5 && stage < 3) {
+            endStage();
+          }
+
+          setTimeout(() => mole.remove(), 500);
+        });
+
+        const timeout = setTimeout(() => {
+          if (hole.contains(mole)) {
+            mole.remove();
+          }
+        }, 1000);
+
+        moleTimeouts.push(timeout);
+      });
+    }
+
+    function clearAllMoles() {
+      holesContainer.querySelectorAll('.hole').forEach(hole => (hole.innerHTML = ''));
+      moleTimeouts.forEach(timeout => clearTimeout(timeout));
+      moleTimeouts = [];
+    }
+
+    function startGame() {
+      if (isGameRunning) return;
+
+      isGameRunning = true;
+      score = 0;
+      time = 15;
+      lives = 5;
+      hitCount = 0;
+      stage = 1;
+      scoreElement.textContent = score;
+      timeElement.textContent = time;
+      lifeElement.textContent = '❤️❤️❤️❤️❤️';
+      stageElement.textContent = stage;
+      startButton.disabled = true;
+      nextStageButton.style.display = 'none';
+      startStage3Button.style.display = 'none';
+
+      createHoles(6);
+
+      gameInterval = setInterval(() => {
+        time--;
+        timeElement.textContent = time;
+
+        if (!moleHitThisTurn) {
+          lives--;
+          updateLivesDisplay();
+          if (lives <= 0 || time <= 0) {
+            endGame();
+            return;
+          }
+        }
+      }, 1000);
+
+      moleInterval = setInterval(showMoles, 800);
+    }
+
+    function endGame() {
+      clearInterval(gameInterval);
+      clearInterval(moleInterval);
+      clearAllMoles();
+      isGameRunning = false;
+
+      if (stage === 3 && lives <= 0) {
+        alert(`ゲーム終了！スコア: ${score}`);
+      }
+
+      startButton.disabled = false;
+    }
+
+    function updateLivesDisplay() {
+      const hearts = '❤️'.repeat(lives) + '🖤'.repeat(5 - lives);
+      lifeElement.textContent = hearts;
+    }
+
+    function endStage() {
+      clearInterval(gameInterval);
+      clearInterval(moleInterval);
+      clearAllMoles();
+      isGameRunning = false;
+
+      if (stage === 1) {
+        alert(`ステージ ${stage} クリア！`);
+        stage++;
+        stageElement.textContent = stage;
+        lives = 5;
+        updateLivesDisplay();
+        nextStageButton.style.display = 'inline-block';
+      } else if (stage === 2) {
+        alert(`ステージ ${stage} クリア！`);
+        stage++;
+        stageElement.textContent = stage;
+        hitCount = 0;
+        time = 15;
+        createHoles(8); // ステージ2は8穴
+        isGameRunning = true;
+        nextStageButton.style.display = 'none';
+        gameInterval = setInterval(() => {
+          time--;
+          timeElement.textContent = time;
+
+          if (!moleHitThisTurn) {
+            lives--;
+            updateLivesDisplay();
+            if (lives <= 0 || time <= 0) {
+              endGame();
+              return;
+            }
+          }
+        }, 1000);
+
+        moleInterval = setInterval(showMoles, 800);
+      } else if (stage === 3) {
+        alert(`ステージ ${stage} クリア！\nステージ3ではライフが尽きるまでスコアを競います！`);
+        startStage3Button.style.display = 'inline-block';
+        nextStageButton.style.display = 'none';
+      }
+    }
+
+    function startNextStage() {
+      time = 15;
+      score += 50;
+      hitCount = 0;
+      timeElement.textContent = time;
+
+      const holeCount = 8; // ステージ2は8穴
+      createHoles(holeCount);
+
+      isGameRunning = true;
+      nextStageButton.style.display = 'none';
+
+      gameInterval = setInterval(() => {
+        time--;
+        timeElement.textContent = time;
+
+        if (!moleHitThisTurn) {
+          lives--;
+          updateLivesDisplay();
+          if (lives <= 0 || time <= 0) {
+            endGame();
+            return;
+          }
+        }
+      }, 1000);
+
+      moleInterval = setInterval(showMoles, 800);
+    }
+
+    startButton.addEventListener('click', startGame);
+    nextStageButton.addEventListener('click', startNextStage);
+    startStage3Button.addEventListener('click', startGame);
+
+  </script>
+</body>
+</html>

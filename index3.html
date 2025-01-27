@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ミニゲームレビューサイト</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #110416; /* 初期背景色 */
+  animation: changeBackgroundColor 10s infinite alternate; /* アニメーションの追加 */
+}
+
+@keyframes changeBackgroundColor {
+  0% {
+    background-color: #f7bb6d42; /* 初期色 */
+  }
+  25% {
+    background-color: #ceff8548; /* 2番目の色 */
+  }
+  50% {
+    background-color: #799dff; /* 3番目の色 */
+  }
+  75% {
+    background-color: #9d21fd; /* 4番目の色 */
+  }
+  100% {
+    background-color: #fb7bac; /* 5番目の色 */
+  }
+}
+
+
+.container {
+  width: 80%;
+  margin: 20px auto;
+  background-color: #a0b3f7; /* メインコンテンツエリアの背景を白に */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+    h1 {
+      text-align: center;
+    }
+
+    .review-form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    .review-form select,
+    .review-form textarea,
+    .review-form button {
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .review-list {
+      margin-top: 20px;
+    }
+
+    .review-item {
+      background-color: #f9f9f9;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .review-item h3 {
+      margin: 0;
+    }
+
+    .review-item p {
+      margin: 10px 0;
+    }
+
+    .review-item span {
+      font-weight: bold;
+    }
+
+    .error-message {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .no-reviews {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+    }
+
+    .star-rating {
+  display: flex;
+  justify-content: flex-start;
+  gap: 5px;
+  cursor: pointer;
+  background-color: #fff; /* 背景色を白に設定 */
+  border: 1px solid #ccc; /* 枠線の色を周囲のコンテナに合わせる */
+  border-radius: 8px; /* 丸みをつける */
+  padding: 5px 10px; /* 内側の余白 */
+  width: fit-content; /* 内容に合わせて幅を調整 */
+  margin-top: 10px; /* ゲームタイトルとレビューの間隔を調整 */
+  margin-bottom: 10px; /* 星評価とレビュー入力フィールドの間隔を調整 */
+}
+
+.star {
+  font-size: 30px; /* 星の大きさ */
+  color: #d1cbcb; /* 星の枠の色 */
+}
+
+.star.selected {
+  color: gold; /* 塗りつぶされた星の色 */
+}
+
+textarea {
+  width: 100%;
+  padding: 10px 15px; /* 左右に15pxの内側の余白を追加 */
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px; /* 星評価との間隔 */
+  box-sizing: border-box; /* paddingを含めてサイズを調整 */
+}
+
+
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown-button {
+      width: 100%;
+      padding: 20px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 100%;
+      z-index: 1;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      border: 1px solid #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .dropdown-content div {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .dropdown-content div:hover {
+      background-color: #f1f1f1;
+    }
+
+    .dropdown-content img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      border-radius: 90%; /* 丸みを帯びさせる */
+    }
+
+    .dropdown.open .dropdown-content {
+      display: block;
+    }
+
+    .dropdown.open .dropdown-button {
+      border-color: #333;
+    }
+
+    /* アプリアイコンのスタイル */
+    .app-icons {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr); /* 1行に8個並べる */
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .app-icons img {
+      width: 50px; /* アイコンの大きさ */
+      height: 50px;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .app-icons img:hover {
+      transform: scale(1.1); /* ホバー時に拡大 */
+    }
+
+    /* ゲームタイトル横のアイコンに丸みをつける */
+    .dropdown-item img {
+      border-radius: 10%;
+    }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden; /* 横スクロールを無効に */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        /* ヘッダーのスタイル */
+        header {
+            background-color: rgba(29, 31, 32, 0.9); /* ヘッダーの背景に透過を追加 */
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 左寄せにする */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* ヘッダーに影を追加 */
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li {
+            position: relative; /* 子メニューの位置を相対的に設定 */
+        }
+
+        nav ul li a {
+            color: #808080;
+            text-decoration: none;
+            padding: 5px 10px;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: white;
+        }
+  </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header id="header">
+        <div class="logo">
+            <a href="" target="_blank">
+                <img src="UBDC.png" alt="Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">ホーム</a></li>
+                <li><a href="index3.html">レビュー</a></li>
+            </ul>
+        </nav>
+    </header>
+
+<div class="container">
+    <h2 style="text-align: center;">レビュー</h2>
+  <!-- アプリアイコン16個 (リンクを追加) -->
+  <div class="app-icons">
+    <a href="index4.html"><img src="テトリス.gif" alt="ゲーム1アイコン"></a>
+    <a href="index5.html"><img src="うちゅう.gif" alt="ゲーム2アイコン"></a>
+    <a href="index6.html"><img src="パックマン.gif" alt="ゲーム3アイコン"></a>
+    <a href="index7.html"><img src="3Dボール.gif" alt="ゲーム4アイコン"></a>
+    <a href="index8.html"><img src="よこ.gif" alt="ゲーム5アイコン"></a>
+    <a href="index9.html"><img src="カエル.gif" alt="ゲーム6アイコン"></a>
+    <a href="index10.html"><img src="はんぷく.gif" alt="ゲーム7アイコン"></a>
+    <a href="index11.html"><img src="かず.gif" alt="ゲーム8アイコン"></a>
+    <a href="index12.html"><img src="しんけい.gif" alt="ゲーム9アイコン"></a>
+    <a href="index13.html"><img src="きおく.gif" alt="ゲーム10アイコン"></a>
+    <a href="index14.html"><img src="Block Lane.gif" alt="ゲーム11アイコン"></a>
+    <a href="index15.html"><img src="モグラ.gif" alt="ゲーム12アイコン"></a>
+    <a href="index16.html"><img src="スライダー.gif" alt="ゲーム13アイコン"></a>
+    <a href="index17.html"><img src="クリック.gif" alt="ゲーム14アイコン"></a>
+    <a href="index18.html"><img src="コイン.gif" alt="ゲーム15アイコン"></a>
+    <a href="index19.html"><img src="シューテイング.gif" alt="ゲーム16アイコン"></a>
+  </div>
+
+  <!-- レビュー投稿フォーム -->
+  <div class="review-form">
+    <div class="dropdown" id="gameTitleDropdown">
+      <div class="dropdown-button">
+        <span>ゲームタイトルを選択</span>
+        <span>&#9660;</span>
+      </div>
+      <div class="dropdown-content">
+        <div class="dropdown-item" data-value="テトリス">
+          <img src="テトリス.gif" alt="ゲームAアイコン">
+          <span>テトリス</span>
+        </div>
+        <div class="dropdown-item" data-value="バブルゲーム">
+          <img src="うちゅう.gif" alt="ゲームBアイコン">
+          <span>バブルゲーム</span>
+        </div>
+        <div class="dropdown-item" data-value="パックマン">
+          <img src="パックマン.gif" alt="ゲームCアイコン">
+          <span>パックマン</span>
+        </div>
+        <div class="dropdown-item" data-value="3Dパルクール">
+          <img src="3Dボール.gif" alt="ゲームCアイコン">
+          <span>3Dパルクール</span>
+        </div>
+        <div class="dropdown-item" data-value="横スクロールゲー">
+          <img src="よこ.gif" alt="ゲームCアイコン">
+          <span>横スクロールゲー</span>
+        </div>
+        <div class="dropdown-item" data-value="カエルの冒険">
+          <img src="カエル.gif" alt="ゲームCアイコン">
+          <span>カエルの冒険</span>
+        </div>
+        <div class="dropdown-item" data-value="反復横跳び">
+          <img src="はんぷく.gif" alt="ゲームCアイコン">
+          <span>反復横跳び</span>
+        </div>
+        <div class="dropdown-item" data-value="数当て">
+          <img src="かず.gif" alt="ゲームCアイコン">
+          <span>数当て</span>
+        </div>
+        <div class="dropdown-item" data-value="神経衰弱">
+          <img src="しんけい.gif" alt="ゲームCアイコン">
+          <span>神経衰弱</span>
+        </div>
+        <div class="dropdown-item" data-value="記憶ゲーム">
+          <img src="きおく.gif" alt="ゲームCアイコン">
+          <span>記憶ゲーム</span>
+        </div>
+        <div class="dropdown-item" data-value="Block Lane">
+          <img src="Block Lane.gif" alt="ゲームCアイコン">
+          <span>Block Lane</span>
+        </div>
+        <div class="dropdown-item" data-value="モグラ叩き">
+          <img src="モグラ.gif" alt="ゲームCアイコン">
+          <span>モグラ叩き</span>
+        </div>
+        <div class="dropdown-item" data-value="スライダーパズル">
+          <img src="スライダー.gif" alt="ゲームCアイコン">
+          <span>スライダーパズル</span>
+        </div>
+        <div class="dropdown-item" data-value="クリックゲーム">
+          <img src="クリック.gif" alt="ゲームCアイコン">
+          <span>クリックゲーム</span>
+        </div>
+        <div class="dropdown-item" data-value="コインめくり">
+          <img src="コイン.gif" alt="ゲームCアイコン">
+          <span>コインめくり</span>
+        </div>
+        <div class="dropdown-item" data-value="シューティング">
+          <img src="シューテイング.gif" alt="ゲームCアイコン">
+          <span>シューティング</span>
+        </div>
+        <!-- 他のゲームアイコンもそのまま -->
+      </div>
+    </div>
+
+    <!-- ゲームタイトルを格納するhidden inputを追加 -->
+    <input type="hidden" id="gameTitle" required>
+
+    <!-- 星評価 -->
+<div class="star-rating" id="starRating">
+  <span class="star" data-value="1">&#9733;</span>
+  <span class="star" data-value="2">&#9733;</span>
+  <span class="star" data-value="3">&#9733;</span>
+  <span class="star" data-value="4">&#9733;</span>
+  <span class="star" data-value="5">&#9733;</span>
+</div>
+
+    <textarea id="gameReview" placeholder="ゲームレビューをここに書いてください" rows="5" required></textarea>
+
+    <input type="hidden" id="gameRating" required>
+    <button id="submitReview">レビューを投稿</button>
+  </div>
+
+  <div class="error-message" id="errorMessage" style="display: none;">すべてのフィールドを正しく入力してください。</div>
+
+  <div class="review-list" id="reviewList">
+    <h2>レビュー一覧</h2>
+    <p class="no-reviews" id="noReviewsMessage">まだレビューはありません。</p>
+  </div>
+</div>
+
+<script>
+  // カスタムドロップダウンの制御
+  document.querySelector('.dropdown-button').addEventListener('click', function() {
+    const dropdown = document.getElementById('gameTitleDropdown');
+    dropdown.classList.toggle('open');
+  });
+
+  document.querySelectorAll('.dropdown-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      const selectedGame = item.getAttribute('data-value');
+      document.querySelector('.dropdown-button span').textContent = selectedGame;
+      document.getElementById('gameTitle').value = selectedGame;
+      document.getElementById('gameTitleDropdown').classList.remove('open');
+    });
+  });
+
+  // 星の評価を選択する
+  document.querySelectorAll('.star').forEach(function(star) {
+    star.addEventListener('click', function() {
+      const rating = this.getAttribute('data-value');
+      document.getElementById('gameRating').value = rating;
+
+      // 星の選択状態を更新
+      document.querySelectorAll('.star').forEach(function(s) {
+        s.classList.remove('selected');
+      });
+      for (let i = 0; i < rating; i++) {
+        document.querySelectorAll('.star')[i].classList.add('selected');
+      }
+    });
+  });
+
+  // ローカルストレージからレビューを読み込む
+  function loadReviews() {
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const reviewList = document.getElementById('reviewList');
+    const noReviewsMessage = document.getElementById('noReviewsMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (reviews.length > 0) {
+      noReviewsMessage.style.display = 'none';
+      reviewList.innerHTML = '<h2>レビュー一覧</h2>';
+     
+       // レビューを逆順にして表示する
+    reviews.reverse().forEach(review => {
+      const reviewElement = document.createElement('div');
+      reviewElement.classList.add('review-item');
+      reviewElement.innerHTML = ` 
+        <h3>${review.title}</h3>
+        <p>${review.review}</p>
+        <span>評価: ${review.rating}</span>
+      `;
+      reviewList.appendChild(reviewElement);
+    });
+  } else {
+    noReviewsMessage.style.display = 'block';
+  }
+}
+
+  // レビューを投稿する
+  document.getElementById('submitReview').addEventListener('click', function() {
+    const title = document.getElementById('gameTitle').value;
+    const review = document.getElementById('gameReview').value;
+    const rating = document.getElementById('gameRating').value;
+
+    if (!title || !review || !rating) {
+      document.getElementById('errorMessage').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('errorMessage').style.display = 'none';
+
+    const newReview = { title, review, rating };
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    reviews.push(newReview);
+    localStorage.setItem('reviews', JSON.stringify(reviews));
+
+    document.getElementById('gameTitle').value = '';
+    document.getElementById('gameReview').value = '';
+    document.getElementById('gameRating').value = '';
+
+    loadReviews();
+  });
+
+  window.onload = loadReviews;
+</script>
+
+</body>
+</html>

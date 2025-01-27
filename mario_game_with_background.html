@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カエルのコイン集めゲーム</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #titleScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    #titleScreen h1 {
+      margin: 0;
+      font-size: 3rem;
+    }
+    #titleScreen p {
+      font-size: 1.2rem;
+      margin: 20px 0;
+      text-align: center;
+    }
+    #titleScreen button {
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      background-color: #00cc66;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #titleScreen button:hover {
+      background-color: #00994c;
+    }
+    #scoreboard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    #endScreen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      display: none;
+    }
+    #endScreen h1 {
+      margin: 0;
+      font-size: 4rem;
+    }
+    #endScreen button {
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      background-color: #00cc66;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #endScreen button:hover {
+      background-color: #00994c;
+    }
+  </style>
+</head>
+<body>
+  <div id="titleScreen">
+    <h1>カエルのコイン集めゲーム</h1>
+    <p>ジャンプしてコインを集めましょう！<br>矢印キーで移動し、↑キーでジャンプします。</p>
+    <button id="startButton">ゲームスタート</button>
+  </div>
+  <div id="scoreboard">スコア: 0</div>
+  <div id="endScreen">
+    <h1 id="endScoreText">ゲームオーバー</h1>
+    <p id="finalScore">最終スコア: 0</p>
+    <button id="restartButton">タイトルに戻る</button>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const titleScreen = document.getElementById("titleScreen");
+    const startButton = document.getElementById("startButton");
+    const scoreboard = document.getElementById("scoreboard");
+    const endScreen = document.getElementById("endScreen");
+    const endScoreText = document.getElementById("endScoreText");
+    const finalScore = document.getElementById("finalScore");
+    const restartButton = document.getElementById("restartButton");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 背景画像の読み込み
+    const backgroundImage = new Image();
+    backgroundImage.src = 'マリオ背景2.jpg';
+
+    // ボス戦背景画像の読み込み
+    const bossBackgroundImage = new Image();
+    bossBackgroundImage.src = 'ボス戦背景.jpg';  // ボス戦の背景画像
+
+    // 地面画像の読み込み
+    const groundImage = new Image();
+    groundImage.src = '地面.jpg';
+
+    // キャラクター画像
+    const marioStandImage = new Image();
+    marioStandImage.src = 'カエル待機2.png';
+
+    const marioRunImage = new Image();
+    marioRunImage.src = 'カエルラン4.png';
+
+    // コイン画像
+    const coinImage = new Image();
+    coinImage.src = 'コイン.png';
+
+    // 土管画像
+    const pipeImage = new Image();
+    pipeImage.src = '土管.png'; // ここに土管の画像を指定
+
+    // ボス画像
+    const bossImage = new Image();
+    bossImage.src = 'ボス.png'; // ボスの画像
+
+    // ゲーム設定
+    const gravity = 0.5;
+    const player = {
+      x: 50,
+      y: canvas.height - 150,
+      width: 50,
+      height: 50,
+      dx: 0,
+      dy: 0,
+      jumpPower: -12,
+      onGround: true,
+      image: marioStandImage,
+      facingRight: true,
+      cameraOffset: 0,
+      isCrouching: false,  // しゃがみ状態
+      pipeSpawned: false,
+      pipeX: 0,
+      pipeY: 0,
+      inPipe: false, // 土管に入っているかどうか
+    };
+
+    const platforms = [
+      { x: 0, y: canvas.height - 100, width: canvas.width, height: 100 },
+      { x: 200, y: canvas.height - 200, width: 150, height: 20 },
+      { x: 400, y: canvas.height - 300, width: 150, height: 20 },
+      { x: 600, y: canvas.height - 400, width: 150, height: 20 },
+      { x: 800, y: canvas.height - 400, width: 100, height: 20 },
+      { x: 1000, y: canvas.height - 500, width: 200, height: 20 },
+      { x: 1300, y: canvas.height - 100, width: 200, height: 20 },
+      { x: 150, y: canvas.height - 250, width: 100, height: 20 },
+      { x: 500, y: canvas.height - 150, width: 120, height: 20 },
+      { x: 800, y: canvas.height - 300, width: 150, height: 20 },
+      { x: 1100, y: canvas.height - 350, width: 120, height: 20 }
+    ];
+
+    const coins = [];
+    const coinCount = 30;
+
+    function placeCoins() {
+      coins.length = 0;
+      for (let i = 0; i < coinCount; i++) {
+        const platform = platforms[Math.floor(Math.random() * platforms.length)];
+        const x = platform.x + Math.random() * (platform.width - 20);
+        const y = platform.y - 20;
+        coins.push({ x, y, width: 20, height: 20 });
+      }
+    }
+
+    const keys = {
+      ArrowRight: false,
+      ArrowLeft: false,
+      ArrowUp: false,
+      ArrowDown: false,  // しゃがみ
+    };
+
+    let score = 0;
+    let isBossFight = false;
+    let bossHealth = 100;
+    let bossJumpCount = 0;
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "ArrowRight") keys.ArrowRight = true;
+      if (e.code === "ArrowLeft") keys.ArrowLeft = true;
+      if (e.code === "ArrowUp" && player.onGround) {
+        keys.ArrowUp = true;
+        player.dy = player.jumpPower;
+        player.onGround = false;
+      }
+      if (e.code === "ArrowDown") keys.ArrowDown = true;  // しゃがみ
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (e.code === "ArrowRight") keys.ArrowRight = false;
+      if (e.code === "ArrowLeft") keys.ArrowLeft = false;
+      if (e.code === "ArrowUp") keys.ArrowUp = false;
+      if (e.code === "ArrowDown") keys.ArrowDown = false;  // しゃがみ解除
+    });
+
+    function update() {
+      if (keys.ArrowRight) {
+        player.dx = 5;
+        player.image = marioRunImage;
+        player.facingRight = true;
+      } else if (keys.ArrowLeft) {
+        player.dx = -5;
+        player.image = marioRunImage;
+        player.facingRight = false;
+      } else {
+        player.dx = 0;
+        player.image = marioStandImage;
+      }
+
+      if (keys.ArrowUp && player.onGround){
+        player.dy = player.jumpPower;
+        player.onGround = false;
+      }
+
+      if (player.inPipe){
+        player.dx = 0;
+        
+        if(player.y > canvas.height - 100){
+          player.dy = 2;
+        } else {
+          player.dy = 0;
+          player.inPipe = false;
+          startBossFight();
+        }
+      
+
+        if (player.y > canvas.height - 150){
+          player.inPipe = false;
+        }
+      }
+
+      // しゃがみ動作
+      if (keys.ArrowDown) {
+        player.isCrouching = true;
+        player.height = 30; // しゃがんでいるときは高さを小さくする
+      } else {
+        player.isCrouching = false;
+        player.height = 50; // 通常時の高さ
+      }
+
+      // 移動更新
+      player.x += player.dx;
+      player.y += player.dy;
+
+      // 重力適用
+      player.dy += gravity;
+
+      //
+      player.onGround = false;
+
+      const currentPlatforms = isBossFight ? bossPlatforms : platforms;
+
+      currentPlatforms.forEach((platform) => {
+      if (
+        player.x + player.width > platform.x &&
+        player.x < platform.x + platform.width &&
+        player.y + player.height > platform.y &&
+        player.y + player.height - player.dy < platform.y
+      ) {
+        player.dy = 0;
+        player.y = platform.y - player.height;
+        player.onGround = true;
+      }
+    });
+
+      //ボス戦時の地面判定
+      if (isBossFight){
+        bossPlatforms.forEach((platform) => {
+          if (
+            player.x + player.width > platform.x &&
+            player.x < platform.x + platform.width &&
+            player.y + player.height > platform.y &&
+            player.y + player.height - player.dy < platform.y
+          ) {
+            player.dy = 0;
+            player.y = platform.y - player.height;
+            player.onGround = true;
+          }
+        });
+      } else {
+      //通常のプラットフォーム判定
+      platforms.forEach((platform) => {
+        if (
+          player.x + player.width > platform.x &&
+          player.x < platform.x + platform.width &&
+          player.y + player.height > platform.y &&
+          player.y + player.height - player.dy < platform.y
+        ) {
+          player.dy = 0;
+          player.y = platform.y - player.height;
+          player.onGround = true;
+        }
+      });
+      }
+      // コインを取ったかチェック
+      coins.forEach((coin, index) => {
+        if (player.x < coin.x + coin.width &&
+            player.x + player.width > coin.x &&
+            player.y < coin.y + coin.height &&
+            player.y + player.height > coin.y) {
+          score++;
+          coins.splice(index, 1);
+        }
+      });
+
+      // すべてのコインを集めたかチェック
+      if (coins.length === 0 && !player.pipeSpawned) {
+        player.pipeSpawned = true;
+        player.pipeX = canvas.width / 2 - 50;
+        player.pipeY = canvas.height - 180;
+      }
+
+      // 土管に入る判定
+      if (
+  player.pipeSpawned &&
+  keys.ArrowDown && // ↓キーを押しているか
+  player.x + player.width > player.pipeX &&
+  player.x < player.pipeX + 50 &&
+  player.y + player.height > player.pipeY
+) {
+  player.inPipe = true; // 土管に入るフラグ
+  player.dy = 2; // プレイヤーを下方向に移動
+}
+
+      // ボス戦中
+      if (isBossFight) {
+        // ボスとの接触判定
+        if (player.x + player.width > canvas.width / 2 - 100 && player.x < canvas.width / 2 + 50 && player.y + player.height > canvas.height - 200) {
+          bossJumpCount++;
+          if (bossJumpCount >= 3) {
+            endBossFight();
+          }
+        }
+      }
+
+      // プレイヤーが落下したらゲームオーバー
+      if (player.y > canvas.height) {
+        gameOver();
+      }
+
+      // カメラをプレイヤーに追尾させる
+      if (player.x > canvas.width / 2) {
+        player.cameraOffset = player.x - canvas.width / 2;
+      }
+    }
+
+    function startBossFight() {
+      isBossFight = true;
+      player.inPipe = false;
+      player.x = 100;
+      player.y = canvas.height - 150;
+      player.dx = 0;
+      player.dy = 0;
+      player.onGround = true;
+      bossHealth = 100; // ボスの体力リセット
+      score = 0; // 新しいステージではスコアリセット
+      platforms.length = 0; // ボス戦では台を消す
+    }
+
+    function endBossFight() {
+      isBossFight = false;
+      endScreen.style.display = "flex";
+      finalScore.textContent = `最終スコア: ${score}`;
+      titleScreen.style.display = "none";
+      scoreboard.style.display = "none";
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 背景変更
+      if (isBossFight) {
+        ctx.drawImage(bossBackgroundImage, 0, 0, canvas.width, canvas.height); // ボス戦背景
+      } else {
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+      }
+
+      // 台の描画
+      if (!isBossFight) {
+        platforms.forEach((platform) => {
+          ctx.drawImage(groundImage, platform.x - player.cameraOffset, platform.y, platform.width, platform.height);
+        });
+      }
+
+      coins.forEach((coin) => {
+        ctx.drawImage(coinImage, coin.x - player.cameraOffset, coin.y, coin.width, coin.height);
+      });
+
+      if (player.pipeSpawned) {
+        ctx.drawImage(pipeImage, player.pipeX - player.cameraOffset, player.pipeY, 50, 100);
+      }
+
+      if (isBossFight) {
+        ctx.drawImage(bossImage, canvas.width / 2 - 100, canvas.height - 200, 150, 150);
+      }
+
+      if (player.facingRight) {
+        ctx.drawImage(player.image, player.x - player.cameraOffset, player.y, player.width, player.height);
+      } else {
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(player.image, -(player.x - player.cameraOffset + player.width), player.y, player.width, player.height);
+        ctx.restore();
+      }
+
+      scoreboard.textContent = `スコア: ${score}`;
+    }
+
+    function gameOver() {
+      endScreen.style.display = "flex";
+      finalScore.textContent = `最終スコア: ${score}`;
+      titleScreen.style.display = "none";
+      scoreboard.style.display = "none";
+    }
+
+    restartButton.addEventListener("click", () => {
+      location.reload();
+    });
+
+    startButton.addEventListener("click", () => {
+      titleScreen.style.display = "none";
+      scoreboard.style.display = "block";
+      placeCoins();
+      gameLoop();
+    });
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header with Dropdown Menu & Slider</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e1f5fe;  /* ページ全体の背景色を寒色系の薄い青に変更 */
+            animation: backgroundAnimation 5s infinite alternate; /* 背景の寒色系アニメーション */
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background-color: #e1f5fe;  /* 薄い青 */
+            }
+            50% {
+                background-color: #80deea; /* 水色 */
+            }
+            100% {
+                background-color: #4fc3f7; /* 青 */
+            }
+        }
+
+        /* 動くパララックス背景 */
+        .parallax {
+            position: relative;
+            height: 60vh;
+            background-image: url("bizimin.webp"); 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: -1;
+            animation: moveBackground 10s linear infinite;
+        }
+
+        /* パララックス背景の動き */
+        @keyframes moveBackground {
+            0% {
+                background-position: center;
+            }
+            50% {
+                background-position: left center;
+            }
+            100% {
+                background-position: center;
+            }
+        }
+
+/* 背景画像の上に重ねる写真 */
+.overlay-image {
+    position: absolute;
+    top: 15%; /* 画像の垂直位置を調整 */
+    left: 50%;
+    transform: translateX(-50%); /* 水平方向に中央寄せ */
+    width: 650px; /* 画像の幅を指定 */
+    height: auto; /* 高さは自動調整 */
+    z-index: 1; /* 背景より前面に表示 */
+}
+
+
+
+        /* ヘッダーのスタイル */
+        header {
+            background-color: rgba(0, 0, 0, 0.8);  /* ヘッダーの背景色を黒に変更 */
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            color: #80deea; /* 水色 */
+            text-decoration: none;
+            padding: 5px 10px;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: white;
+        }
+
+        /* スライダー部分 */
+        .container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            overflow: hidden;
+            margin: 20px auto 20px;
+        }
+
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slider {
+            width: 31%;
+            height: 265px;
+            background-color: #80deea;  /* スライダーの背景色を水色に変更 */
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex: 0 0 auto;
+            margin-right: 20px;
+            opacity: 0.8;
+            background-size: cover; /* 背景画像のサイズをスライダーに合わせる */
+            background-position: center; /* 画像を中央に配置 */
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .arrow-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: none;
+            padding: 15px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .left-arrow {
+            left: 10px;
+        }
+
+        .right-arrow {
+            right: 10px;
+        }
+
+        /* コンテンツ部分の背景色を寒色系の薄い青に変更 */
+        .content {
+            padding: 20px;
+            margin-top: 20px;
+            height: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e1f5fe;  /* 背景色を薄い青に変更 */
+        }
+
+        /* 2つ目のパララックス背景 */
+        .parallax2 {
+            position: relative;
+            background-image: url('ブロスタ.jpg');
+            height: 40vh;
+            background-attachment: fixed;
+            background-position: top;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.6);  /* ヘッダーの背景色を寒色系に変更 */
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        footer a {
+            color: #80deea; /* 水色 */
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .content.section {
+    width: 80%;  /* 幅を80%に設定 */
+    height: 10%;
+    max-width: 1200px;  /* 最大幅を1200pxに設定（必要に応じて調整） */
+    margin: 0 auto;  /* 中央揃え */
+    padding: 20px;
+    color: rgb(0, 0, 0);
+    background-color: rgba(255, 255, 255, 0);  /* ヘッダーの背景色を黒に変更 */
+}
+.content.section2 {
+    width: 200%;  /* 幅を80%に設定 */
+    height: 2.5%;
+    max-width: 1200px;  /* 最大幅を1200pxに設定（必要に応じて調整） */
+    margin: 0 auto;  /* 中央揃え */
+    padding: 20px;
+    color: rgb(0, 0, 0);
+    background-color: rgba(255, 255, 255, 0);  /* ヘッダーの背景色を黒に変更 */
+}
+
+.content img {
+    display: block;
+    margin: 0 auto;
+    width: 50%;    /* 幅を親要素の80%に設定 */
+    height: auto;  /* 高さは自動で調整 */
+    border: 5px solid #83c5ffaf; /* 白い枠線を5pxの太さで追加 */
+    border-radius: 15px; /* 角を丸くする（オプション） */
+    box-shadow: 0 4px 8px rgb(0, 81, 255); /* 枠に影をつける（オプション） */
+}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="content section2">
+        <h1></h1>
+    </div>
+
+    <div class="content section">
+        <h1>BIZIMIN</h1>
+        <p>ミニゲームまとめサイト‼</p>
+    </div>
+
+
+    <!-- 最初のパララックス背景セクション -->
+<div class="parallax">
+</div>
+
+    <!-- ヘッダー -->
+    <header>
+        <div class="logo">
+            <a href="" target="_blank">
+                <img src="UBDC.png" alt="Logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">ホーム</a></li>
+                <li><a href="index3.html">レビュー</a></li>
+            </ul>
+        </nav>
+    </header>
+
+
+
+    <!-- 2つ目のパララックス背景 -->
+    <div class="parallax2">
+    <!-- スライダー部分 -->
+    <div class="container">
+        <div class="arrow-btn left-arrow" id="leftArrow">&#8592;</div>
+        <div class="arrow-btn right-arrow" id="rightArrow">&#8594;</div>
+
+        <div class="slider-container" id="sliderContainer">
+            <a href="index4.html" class="slider" style="background-image: url('テトリス.gif');"></a>
+            <a href="index5.html" class="slider" style="background-image: url('うちゅう.gif');"></a>
+            <a href="index6.html" class="slider" style="background-image: url('パックマン.gif');"></a>
+            <a href="index7.html" class="slider" style="background-image: url('3Dボール.gif');"></a>
+            <a href="index8.html" class="slider" style="background-image: url('よこ.gif');"></a>
+            <a href="index9.html" class="slider" style="background-image: url('カエル.gif');"></a>
+            <a href="index10.html" class="slider" style="background-image: url('はんぷく.gif');"></a>
+            <a href="index11.html" class="slider" style="background-image: url('かず.gif');"></a>
+            <a href="index12.html" class="slider" style="background-image: url('しんけい.gif');"></a>
+            <a href="index13.html" class="slider" style="background-image: url('きおく.gif');"></a>
+            <a href="index14.html" class="slider" style="background-image: url('Block Lane.gif');"></a>
+            <a href="index15.html" class="slider" style="background-image: url('モグラ.gif');"></a>
+            <a href="index16.html" class="slider" style="background-image: url('スライダー.gif');"></a>
+            <a href="index17.html" class="slider" style="background-image: url('クリック.gif');"></a>
+            <a href="index18.html" class="slider" style="background-image: url('コイン.gif');"></a>
+            <a href="index19.html" class="slider" style="background-image: url('シューテイング.gif');"></a>
+
+    </div>
+
+    </div>
+
+    <div class="content">
+        <!-- 画像を追加 -->
+        <img src="おわり(1).gif" alt="ビジミニ画像" style="max-width: 100%; height: auto;">
+    </div>
+    
+
+    <!-- フッター -->
+    <footer>
+        <p>&copy; 2024 Your Website. All Rights Reserved.</p>
+        <p>Designed by <a href="" target="_blank">UBDC</a></p>
+    </footer>
+
+    <script>
+        var sliderContainer = document.getElementById("sliderContainer");
+        var leftArrow = document.getElementById("leftArrow");
+        var rightArrow = document.getElementById("rightArrow");
+
+        var currentIndex = 0;
+        var totalSlides = document.querySelectorAll('.slider').length;
+
+        // 右矢印をクリックしたとき
+        rightArrow.addEventListener("click", function() {
+            currentIndex++;
+            if (currentIndex >= totalSlides) {
+                currentIndex = 0;
+            }
+            var offset = -currentIndex * 40;
+            sliderContainer.style.transition = "transform 0.5s ease";
+            sliderContainer.style.transform = "translateX(" + offset + "%)";
+        });
+
+        // 左矢印をクリックしたとき
+        leftArrow.addEventListener("click", function() {
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = totalSlides - 1;
+            }
+            var offset = -currentIndex * 40;
+            sliderContainer.style.transition = "transform 0.5s ease";
+            sliderContainer.style.transform = "translateX(" + offset + "%)";
+        });
+    </script>
+
+</body>
+</html>

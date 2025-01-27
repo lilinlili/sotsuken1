@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>左右キーで移動</title>
+    <style>
+        /* 全体のスタイル */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('taiikukan.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            flex-direction: column;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ボックスのスタイル */
+        #box {
+            width: 150px;
+            height: 150px;
+            position: absolute;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        /* スコアとタイマー表示 */
+        #score, #timer {
+            font-size: 60px;
+            color: white;
+            position: absolute;
+            top: 10px;
+            left: 80px;
+            margin: 0;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        #timer {
+            top: 80px;
+        }
+
+        /* スタートボタンとリスタートボタン */
+        #startButton, #restartButton {
+            font-size: 22px;
+            padding: 12px 24px;
+            background-color: #FF6347;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-top: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        #startButton:hover {
+            background-color: #FF4500;
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        #restartButton {
+            display: none;
+        }
+
+        /* 最終スコア表示 */
+        #finalScore {
+            font-size: 32px;
+            color: #FF6347;
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 25px;
+            border-radius: 12px;
+            display: none;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* タイトル画面 */
+        #titleScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            font-size: 36px;
+            text-align: center;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #titleScreen h1 {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        #titleScreen p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            font-weight: lighter;
+        }
+
+        #titleScreen button {
+            font-size: 26px;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #titleScreen button:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ゲーム画面 */
+        #gameScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            position: relative; /* ここを修正 */
+        }
+
+        /* ゲームボックスの配置 */
+        #gameScreen #box {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+        }
+
+        /* もう一度遊ぶボタン */
+        #restartButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- タイトル画面 -->
+    <div id="titleScreen">
+        <h1>反復横跳びゲーム</h1>
+        <p>左右の矢印キーでキャラクターを移動させ、スコアを獲得しよう！</p>
+        <button id="startButton">スタート</button>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div id="gameScreen">
+        <div id="score">スコア: 0</div>
+        <div id="timer">時間: 15</div>
+        <button id="restartButton">もう一度遊ぶ</button>
+        <div id="finalScore">最終スコア: 0</div>
+
+        <img id="box" src="反復横跳び.png" alt="box image"> <!-- 初期画像 -->
+    </div>
+
+    <script>
+        const box = document.getElementById('box');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const titleScreen = document.getElementById('titleScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const positions = ['left', 'center', 'right'];
+        let currentPosition = 1;
+        let score = 0;
+        let lastPosition = currentPosition;
+        let gameStarted = false;
+        let countdown;
+        let timeLeft = 15;
+        let moveDirection = 'both'; // 初期状態は左右どちらにも移動できる
+        let isSoundPlaying = false;  // 音が再生中かどうかを示すフラグ
+        
+        // 画像の切り替え
+        const images = [
+            '右.png',
+            '上.png',
+            '左2.png'
+        ];
+
+         // 移動音を作成
+         const moveSound = new Audio('move-sound.mp3');  // 音ファイルを指定
+
+// ボックスの移動処理
+function moveBox() {
+    const position = positions[currentPosition];
+    box.src = images[currentPosition];
+
+    switch (position) {
+        case 'left':
+            box.style.left = '30%';
+            box.style.top = '60%';
+            break;
+        case 'center':
+            box.style.left = '50%';
+            box.style.top = '60%';
+            box.style.transform = 'translateX(-50%)';
+            break;
+        case 'right':
+            box.style.left = '70%';
+            box.style.top = '60%';
+            box.style.transform = 'translateX(-100%)';
+            break;
+    }
+
+    if (lastPosition !== currentPosition) {
+        score += 1;
+        scoreDisplay.textContent = `スコア: ${score}`;
+        lastPosition = currentPosition;
+
+        // 毎回新しいAudioインスタンスを作成して音を鳴らす
+        const moveSoundInstance = new Audio('move-sound.mp3'); // 音ファイルを指定
+        moveSoundInstance.play();  // ボックスが移動した際に効果音を再生
+    }
+}
+
+
+        window.addEventListener('keydown', (event) => {
+            if (!gameStarted) return;
+
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                if (currentPosition === 1) {
+                    // 真ん中にいる時、左右どちらにも移動可能
+                    if (event.key === 'ArrowLeft' && moveDirection !== 'left') {
+                        currentPosition = 0; // 左に移動
+                        moveDirection = 'right'; // 次は右にしか移動できない
+                        moveBox();
+                    } else if (event.key === 'ArrowRight' && moveDirection !== 'right') {
+                        currentPosition = 2; // 右に移動
+                        moveDirection = 'left'; // 次は左にしか移動できない
+                        moveBox();
+                    }
+                } else if (currentPosition === 0 && moveDirection === 'right') {
+                    // 左にいる時は右にしか移動できない
+                    if (event.key === 'ArrowRight') {
+                        currentPosition = 1; // 真ん中に移動
+                        moveDirection = 'left'; // 次は左にしか移動できない
+                        moveBox();
+                    }
+                } else if (currentPosition === 2 && moveDirection === 'left') {
+                    // 右にいる時は左にしか移動できない
+                    if (event.key === 'ArrowLeft') {
+                        currentPosition = 1; // 真ん中に移動
+                        moveDirection = 'right'; // 次は右にしか移動できない
+                        moveBox();
+                    }
+                }
+
+                // 真ん中に来た後に再び左右どちらにも戻れないようにする
+                if (currentPosition === 1) {
+                    if (moveDirection === 'right' && event.key === 'ArrowRight') {
+                        return; // 右に戻れない
+                    } else if (moveDirection === 'left' && event.key === 'ArrowLeft') {
+                        return; // 左に戻れない
+                    }
+                }
+            }
+        });
+
+        // ゲーム開始
+        startButton.addEventListener('click', () => {
+            gameStarted = true;
+            gameScreen.style.display = 'block';
+            titleScreen.style.display = 'none';
+            startTimer();
+            moveBox();
+        });
+
+        // タイマー開始
+        function startTimer() {
+            countdown = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `時間: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // ゲーム終了
+        function endGame() {
+            gameStarted = false;
+            finalScoreDisplay.textContent = `最終スコア: ${score}`;
+            finalScoreDisplay.style.display = 'block';
+            restartButton.style.display = 'block';
+        }
+
+        // リスタートボタン
+        restartButton.addEventListener('click', () => {
+            score = 0;
+            timeLeft = 15;
+            currentPosition = 1;
+            lastPosition = currentPosition;
+            moveDirection = 'both'; // リスタート時に移動方向リセット
+            scoreDisplay.textContent = `スコア: 0`;
+            timerDisplay.textContent = `時間: 15`;
+            finalScoreDisplay.style.display = 'none';
+            restartButton.style.display = 'none';
+            startButton.style.display = 'block';
+            gameScreen.style.display = 'none';
+            titleScreen.style.display = 'flex'; // タイトル画面を再表示
+        });
+    </script>
+</body>
+</html>
+
+

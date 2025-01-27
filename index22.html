@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ミニゲームレビューサイト</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background-color 1s; /* 背景色の切り替えにアニメーションを追加 */
+    }
+
+    .container {
+      width: 80%;
+      margin: 20px auto;
+      background-color: rgb(195, 206, 228);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    /* その他のCSSスタイル... */
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header id="header">
+      <div class="logo">
+          <a href="" target="_blank">
+              <img src="UBDC.png" alt="Logo">
+          </a>
+      </div>
+      <nav>
+          <ul>
+              <li><a href="index.html">ホーム</a></li>
+              <li><a href="index3.html">レビュー</a></li>
+          </ul>
+      </nav>
+  </header>
+
+  <div class="container">
+      <h2 style="text-align: center;">レビュー</h2>
+      <!-- アプリアイコン16個 (リンクを追加) -->
+      <div class="app-icons">
+          <a href="index4.html"><img src="テトリス.gif" alt="ゲーム1アイコン"></a>
+          <a href="index5.html"><img src="うちゅう.gif" alt="ゲーム2アイコン"></a>
+          <a href="index6.html"><img src="パックマン.gif" alt="ゲーム3アイコン"></a>
+          <!-- 他のアイコン... -->
+      </div>
+
+      <!-- レビュー投稿フォーム -->
+      <div class="review-form">
+          <!-- ゲームタイトル選択、レビュー記入、星評価など -->
+      </div>
+
+      <div class="error-message" id="errorMessage" style="display: none;">すべてのフィールドを正しく入力してください。</div>
+
+      <div class="review-list" id="reviewList">
+          <h2>レビュー一覧</h2>
+          <p class="no-reviews" id="noReviewsMessage">まだレビューはありません。</p>
+      </div>
+  </div>
+
+  <script>
+    // 現在の時間を取得
+    const currentHour = new Date().getHours();
+
+    // 時間帯に応じて背景色を変更
+    if (currentHour >= 6 && currentHour < 12) {
+      // 朝 (6時〜12時)
+      document.body.style.backgroundColor = "#FFFAE6";  // 明るい黄色
+    } else if (currentHour >= 12 && currentHour < 18) {
+      // 昼 (12時〜18時)
+      document.body.style.backgroundColor = "#A2D8F4";  // 明るい青
+    } else {
+      // 夜 (18時〜6時)
+      document.body.style.backgroundColor = "#2C3E50";  // 暗い青
+    }
+
+    // カスタムドロップダウンの制御
+    document.querySelector('.dropdown-button').addEventListener('click', function() {
+      const dropdown = document.getElementById('gameTitleDropdown');
+      dropdown.classList.toggle('open');
+    });
+
+    document.querySelectorAll('.dropdown-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        const selectedGame = item.getAttribute('data-value');
+        document.querySelector('.dropdown-button span').textContent = selectedGame;
+        document.getElementById('gameTitle').value = selectedGame;
+        document.getElementById('gameTitleDropdown').classList.remove('open');
+      });
+    });
+
+    // 星の評価を選択する
+    document.querySelectorAll('.star').forEach(function(star) {
+      star.addEventListener('click', function() {
+        const rating = this.getAttribute('data-value');
+        document.getElementById('gameRating').value = rating;
+
+        // 星の選択状態を更新
+        document.querySelectorAll('.star').forEach(function(s) {
+          s.classList.remove('selected');
+        });
+        for (let i = 0; i < rating; i++) {
+          document.querySelectorAll('.star')[i].classList.add('selected');
+        }
+      });
+    });
+
+    // ローカルストレージからレビューを読み込む
+    function loadReviews() {
+      const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+      const reviewList = document.getElementById('reviewList');
+      const noReviewsMessage = document.getElementById('noReviewsMessage');
+      const errorMessage = document.getElementById('errorMessage');
+
+      if (reviews.length > 0) {
+        noReviewsMessage.style.display = 'none';
+        reviewList.innerHTML = '<h2>レビュー一覧</h2>';
+        reviews.forEach(review => {
+          const reviewElement = document.createElement('div');
+          reviewElement.classList.add('review-item');
+          reviewElement.innerHTML = ` 
+            <h3>${review.title}</h3>
+            <p>${review.review}</p>
+            <span>評価: ${review.rating}</span>
+          `;
+          reviewList.appendChild(reviewElement);
+        });
+      } else {
+        noReviewsMessage.style.display = 'block';
+      }
+    }
+
+    // レビューを投稿する
+    document.getElementById('submitReview').addEventListener('click', function() {
+      const title = document.getElementById('gameTitle').value;
+      const review = document.getElementById('gameReview').value;
+      const rating = document.getElementById('gameRating').value;
+
+      if (!title || !review || !rating) {
+        document.getElementById('errorMessage').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('errorMessage').style.display = 'none';
+
+      const newReview = { title, review, rating };
+      const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+      reviews.push(newReview);
+      localStorage.setItem('reviews', JSON.stringify(reviews));
+
+      document.getElementById('gameTitle').value = '';
+      document.getElementById('gameReview').value = '';
+      document.getElementById('gameRating').value = '';
+
+      loadReviews();
+    });
+
+    window.onload = loadReviews;
+  </script>
+</body>
+</html>

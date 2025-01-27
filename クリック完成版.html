@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クリックゲーム</title>
+<style>
+       body {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           height: 100vh;
+           background-image: url('ゲーム背景.jpg');
+           font-family: Arial, sans-serif;
+       }
+       .game-container {
+           text-align: center;
+           background-image: url('ゲーム小僧３.jpg'); /* ここに適切な画像のパスを指定 */
+           background-size: cover; /* 画像をカバーするように調整 */
+           background-position: center; /* 画像を中央に配置 */
+           background-color: green; /* 画像が読み込まれない場合の背景カラー */
+           padding: 20px;
+           border-radius: 10px;
+           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+           color: blue;
+       }
+       button {
+           padding: 10px 20px;
+           font-size: 16px;
+           cursor: pointer;
+           background-color: yellow;
+           color: black;
+           border: none;
+           border-radius: 5px;
+           margin-top: 20px;
+       }
+       button:hover {
+           background-color: green;
+       }
+       #ranking {
+           margin-top: 20px;
+           text-align: left;
+       }
+       #ranking h2 {
+           margin-bottom: 10px;
+       }
+       #ranking ol {
+           padding-left: 20px;
+       }
+       #clickButton, #gameOverMessage, #playAgainButton, #resetButton {
+           display: none;
+       }
+       #gameOverMessage {
+           display: none;
+           font-size: 48px; /* 大きなフォントサイズ */
+           font-weight: bold; /* 太字 */
+           text-align: center; /* 中央寄せ */
+           margin-top: 50px; /* 適切なマージン */
+           animation: popUp 0.5s ease forwards; /* クラッカーのポップアップアニメーション */
+       }
+       #finalScore {
+           font-size: 72px; /* 大きなフォントサイズ */
+           color: red; /* 目立つ色 */
+           animation: scaleUp 0.5s ease forwards; /* 拡大するアニメーション */
+       }
+       #time {
+           font-size: 36px; /* 大きなフォントサイズ */
+           color: red; /* 白色 */
+           font-weight: bold; /* 太字 */
+           letter-spacing: 5px; /* 文字間のスペース */
+       }
+
+       @keyframes popUp {
+           0% {
+               transform: scale(0.8);
+           }
+           100% {
+               transform: scale(1);
+           }
+       }
+
+       @keyframes scaleUp {
+           from {
+               transform: scale(0);
+           }
+           to {
+               transform: scale(1);
+           }
+       }
+</style>
+</head>
+<body>
+<div class="game-container">
+<h1>クリックゲーム</h1>
+<p>スコア: <span id="score">0</span></p>
+<p>残り時間: <span id="time">10</span> 秒</p>
+<button id="startButton">スタート</button>
+<button id="clickButton"></button> <!-- ボタンのテキストを空にしています -->
+<p id="gameOverMessage">ゲームオーバー！<br>最終スコア: <span id="finalScore"></span></p>
+<button id="playAgainButton">もう一度</button>
+<button id="resetButton">ランキングをリセット</button>
+<div id="ranking">
+<h2>世界ランキング🔱</h2>
+<ol id="rankingList"></ol>
+</div>
+</div>
+<audio id="奇妙な話.mp3" src="奇妙な話.mp3" preload="auto"></audio>
+<script>
+       let score = 0;
+       let timeLeft = 10; // ゲームの制限時間（秒）
+       let timerInterval;
+       const scoreElement = document.getElementById('score');
+       const timeElement = document.getElementById('time');
+       const startButton = document.getElementById('startButton');
+       const clickButton = document.getElementById('clickButton');
+       const gameOverMessage = document.getElementById('gameOverMessage');
+       const finalScoreElement = document.getElementById('finalScore');
+       const rankingList = document.getElementById('rankingList');
+       const playAgainButton = document.getElementById('playAgainButton');
+       const resetButton = document.getElementById('resetButton');
+       const clickSound = new Audio('奇妙な話.mp3'); // クリック効果音ファイルのパスを指定
+
+       const bgm = document.getElementById('奇妙な話.mp3');
+
+       // BGMをループ再生
+       bgm.loop = true;
+
+       function playClickSound() {
+           clickSound.play();
+       }
+
+       function updateScore() {
+           score++;
+           scoreElement.innerText = score;
+           playClickSound(); // クリックしたときに効果音を再生
+       }
+
+       function updateTime() {
+           timeLeft--;
+           timeElement.innerText = timeLeft;
+           if (timeLeft <= 0) {
+               endGame();
+           }
+       }
+
+       function endGame() {
+           clearInterval(timerInterval);
+           clickButton.disabled = true;
+           gameOverMessage.style.display = 'block';
+           playAgainButton.style.display = 'block'; // ゲーム終了時に「もう一度」ボタンを表示
+           resetButton.style.display = 'block'; // ランキングリセットボタンを表示
+           finalScoreElement.innerText = score;
+           saveScore(score);
+           displayRanking();
+       }
+
+       function saveScore(score) {
+           let scores = JSON.parse(localStorage.getItem('scores')) || [];
+           scores.push(score);
+           scores.sort((a, b) => b - a); // 降順にソート
+           scores = scores.slice(0, 10); // 上位10件のみ保存
+           localStorage.setItem('scores', JSON.stringify(scores));
+       }
+
+       function displayRanking() {
+           const scores = JSON.parse(localStorage.getItem('scores')) || [];
+           rankingList.innerHTML = '';
+           scores.forEach((score, index) => {
+               const li = document.createElement('li');
+               li.innerText = `${index + 1}. ${score}`;
+               rankingList.appendChild(li);
+           });
+       }
+
+       function startGame() {
+           score = 0;
+           timeLeft = 10;
+           scoreElement.innerText = score;
+           timeElement.innerText = timeLeft;
+           clickButton.disabled = false;
+           gameOverMessage.style.display = 'none';
+           playAgainButton.style.display = 'none';
+           resetButton.style.display = 'none';
+           startButton.style.display = 'none';
+           clickButton.style.display = 'block';
+           timerInterval = setInterval(updateTime, 1000);
+           bgm.play(); // BGMを再生
+       }
+
+       function playAgain() {
+           startButton.style.display = 'block'; // スタートボタンを表示
+           playAgainButton.style.display = 'none'; // もう一度ボタンを非表示
+           resetButton.style.display = 'none'; // リセットボタンを非表示
+           startGame(); // ゲームを再開する
+       }
+
+       function resetRanking() {
+           localStorage.removeItem('scores'); // ランキングデータを削除
+           displayRanking(); // ランキング表示を更新
+       }
+
+       function handleKeyPress(event) {
+           if (event.code === 'Space') {
+               updateScore();
+           }
+       }
+
+       startButton.addEventListener('click', startGame);
+       playAgainButton.addEventListener('click', playAgain); // 「もう一度」ボタンのイベントリスナー
+       resetButton.addEventListener('click', resetRanking); // 「ランキングをリセット」ボタンのイベントリスナー
+       document.addEventListener('keydown', handleKeyPress); // スペースキーを監視
+       displayRanking(); // 初期表示時にランキングを表示
+</script>
+</body>
+</html>

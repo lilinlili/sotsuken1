@@ -1,0 +1,359 @@
+/* 全体のスタイル */
+body {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: linear-gradient(to left, #b795f6, #922cff8b);
+  animation: gradientMove 8s ease infinite;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 100% 50%; }
+  50% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* コンテナのスタイル */
+.container {
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  width: 380px;
+  animation: slideIn 1s ease-out;
+  z-index: 1;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 見出しのスタイル */
+h1 {
+  font-size: 36px;
+  font-weight: bold;
+  color: #7279f4;
+  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+}
+
+h2, label {
+  font-size: 20px;
+  font-weight: bold;
+  color: #7279f4;
+  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+}
+
+/* 入力フィールドのスタイル */
+input[type="number"] {
+  width: 90%;
+  padding: 15px;
+  font-size: 18px;
+  border: 2px solid #7279f4;
+  border-radius: 50px;
+  outline: none;
+  background-color: #f6e8fe;
+  color: #333;
+  margin-bottom: 25px;
+  transition: 0.3s all;
+}
+
+input[type="number"]:focus {
+  background-color: #f6e8fe;
+  box-shadow: 0 0 10px rgba(255, 92, 141, 0.5);
+  border-color: #8b59e8;
+}
+
+/* ボタンのスタイル */
+.buttons button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.959);
+  background: linear-gradient(45deg, #4e54c8, #b795f6);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 92, 141, 0.3);
+  margin: 0 5px;
+}
+
+.buttons button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(45deg, #8b59e8, #4e54c8);
+}
+
+.buttons button:active {
+  transform: scale(0.95);
+}
+
+/* 結果メッセージ */
+#result {
+  font-size: 18px;
+  color: #4e54c8;
+  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+  margin-top: 20px;
+}
+
+/* アニメーション付き背景の円 */
+.circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* 高さを100%に */
+  overflow: visible; /* 親要素をオーバーフローを許可にして円が外にはみ出るのを許容 */
+  z-index: -1; /* 背景の円がコンテナより下に配置されるようにする */
+}
+
+@keyframes animate {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-2000px) rotate(720deg); opacity: 0; border-radius: 50%; } /* 上に大きく動かす */
+}
+
+
+
+
+.circles li {
+  position: absolute;
+  display: block;
+  list-style: none;
+  width: 20px;
+  height: 20px;
+  background: rgba(251, 251, 251, 0.649);
+  animation: animate 25s linear infinite;
+  bottom: -170px;
+}
+
+@keyframes animate {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-2000px) rotate(720deg);
+    opacity: 0;
+    border-radius: 50%;
+  }
+}
+
+
+.container {
+  text-align: center;
+  background-color: rgba(253, 232, 255, 0.784);
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  width: 380px;
+  animation: slideIn 1s ease-out;
+  z-index: 1; /* ゲームコンテンツが円の上に配置されるようにする */
+}
+
+/*.circles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 1s; }
+.circles li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 3s:animation-duration: 12s; }
+.circles li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 5s; }
+.circles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 1s; animation-duration: 18s; }
+.circles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 1s; }
+.circles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 4s; }
+.circles li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 8s; }
+.circles li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 25s; animation-duration: 45s; }
+.circles li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 35s; animation-duration: 35s; }
+.circles li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 1s; animation-duration: 11s; }*/
+
+.circles li:nth-child(1) { left: 20%; width: 70px; height: 70px; animation-delay: 1s; }
+.circles li:nth-child(2) { left: 5%; width: 30px; height: 30px; animation-delay: 4s; animation-duration: 14s; }
+.circles li:nth-child(3) { left: 75%; width: 40px; height: 40px; animation-delay: 3s; animation-duration: 16s; }
+.circles li:nth-child(4) { left: 45%; width: 60px; height: 60px; animation-delay: 2s; animation-duration: 20s; }
+.circles li:nth-child(5) { left: 85%; width: 25px; height: 25px; animation-delay: 6s; animation-duration: 18s; }
+.circles li:nth-child(6) { left: 60%; width: 90px; height: 90px; animation-delay: 5s; animation-duration: 22s; }
+.circles li:nth-child(7) { left: 30%; width: 100px; height: 100px; animation-delay: 8s; animation-duration: 28s; }
+.circles li:nth-child(8) { left: 50%; width: 35px; height: 35px; animation-delay: 11s; animation-duration: 40s; }
+.circles li:nth-child(9) { left: 15%; width: 20px; height: 20px; animation-delay: 9s; animation-duration: 36s; }
+.circles li:nth-child(10) { left: 90%; width: 110px; height: 110px; animation-delay: 12s; animation-duration: 30s; }
+
+
+
+@keyframes animate {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-1800px) rotate(720deg); opacity: 0; border-radius: 50%; }
+}
+
+
+
+
+
+/* スタート画面の背景 */
+.start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex; /* フレックスボックスで中央配置 */
+  flex-direction: column; /* 縦方向に配置 */
+  justify-content: center; /* 縦方向の中央寄せ */
+  align-items: center; /* 横方向の中央寄せ */
+  /*background: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #e3e81d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3);*/
+  background: linear-gradient(124deg, #ff7ece,/* #f384ff, #cc91ff, #a27dff, #8688ff, #1ddde8, #2b1de8, #dd00f3, #dd00f3*/);
+  background-size: 1800% 1800%;
+  animation: rainbow 18s ease infinite; /* グラデーションのアニメーション */
+  z-index: 100; /* 他の画面より上に表示 */
+}
+
+@keyframes rainbow { 
+  0% { background-position: 0% 82%; }
+  50% { background-position: 100% 19%; }
+  100% { background-position: 0% 82%; }
+}
+
+/* 他の画面では異なる背景を設定 */
+body {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: linear-gradient(to left, #b795f6, #922cff8b); /* ゲーム中の背景 */
+  animation: gradientMove 8s ease infinite;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 100% 50%; }
+  50% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* タイトルや説明を中央に表示 */
+.title-container {
+  text-align: center; /* 中央揃え */
+  margin-bottom: 20px; /* スタートボタンとの間隔 */
+  color: rgb(255, 255, 255);
+}
+
+.start-screen .title-container {
+  text-align: center; /* 中央揃え */
+  line-height: 1.6; /* 行間を調整 */
+  margin-bottom: 30px; /* 下の余白を調整 */
+}
+
+.start-screen h1 {
+  font-size: 36px; /* 文字サイズ */
+  line-height: 1.4; /* 行間の高さ */
+  margin-bottom: 20px; /* 下の余白 */
+  color: white; /* 白文字 */
+}
+
+.start-screen .description {
+  font-size: 18px; /* 文字サイズ */
+  line-height: 1.8; /* 行間を調整 */
+  margin-bottom: 40px; /* 下の余白 */
+  color: white; /* 白文字 */
+}
+
+.start-screen h2 {
+  font-size: 36px; /* 文字サイズ */
+  color: #ffffff; /* 文字色を白に設定 */
+  margin-bottom: 20px; /* 下の余白を調整 */
+  margin-top: 0; /* 必要なら上の余白も調整 */
+}
+
+
+
+/* スタートボタンを中央に配置する */
+#start-btn {
+  display: block; /* インライン要素をブロック要素として扱う */
+  margin: 0 auto; /* 左右の余白を自動に設定 */
+  padding: 15px 30px;
+  font-size: 16px;
+  color: white;
+  background: linear-gradient(45deg, #b5b9ff, #ddcbfc);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#start-btn:hover {
+  background: linear-gradient(45deg, #ab5cfe, #6697ec);
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#quit {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.959);
+  background: linear-gradient(45deg, #f54b64, #f78361);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 92, 141, 0.3);
+}
+
+#quit:hover {
+  transform: scale(1.1);
+  background: linear-gradient(45deg, #f78361, #f54b64);
+}
+
+#quit:active {
+  transform: scale(0.95);
+}
+
+
+.wrapper { 
+  height: 100%;
+  width: 100%;
+  left:0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+background: linear-gradient(124deg, #ff7ece, #f384ff, #cc91ff, #a27dff, #8688ff, #1ddde8, #2b1de8, #dd00f3, #dd00f3);
+background-size: 1800% 1800%;
+
+-webkit-animation: rainbow 18s ease infinite;
+-z-animation: rainbow 18s ease infinite;
+-o-animation: rainbow 18s ease infinite;
+  animation: rainbow 18s ease infinite;}
+
+@-webkit-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@-moz-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@-o-keyframes rainbow {
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+@keyframes rainbow { 
+    0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+}
+
+
+.container {
+  overflow: visible; /* 必要に応じて明示的に設定 */
+}
